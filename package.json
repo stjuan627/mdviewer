@@ -1,0 +1,44 @@
+{
+  "name": "markdown-box",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "CLOUDFLARE_ENV=production astro build",
+    "build:dev": "CLOUDFLARE_ENV=dev astro build",
+    "build:production": "CLOUDFLARE_ENV=production astro build",
+    "preview": "CLOUDFLARE_ENV=dev astro build && wrangler dev -e dev",
+    "deploy:dev": "CLOUDFLARE_ENV=dev astro build && wrangler deploy -e dev",
+    "deploy:production": "CLOUDFLARE_ENV=production astro build && wrangler deploy -e production",
+    "check": "astro check && tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "db:migrate:local": "wrangler d1 migrations apply DB -e dev --local",
+    "db:migrate:remote:dev": "wrangler d1 migrations apply DB -e dev --remote",
+    "db:migrate:remote:production": "wrangler d1 migrations apply DB -e production --remote"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^13.5.0",
+    "@astrojs/react": "^5.0.4",
+    "astro": "^6.3.1",
+    "marked": "^16.4.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "sanitize-html": "^2.17.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@cloudflare/workers-types": "^4.20260511.1",
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.3",
+    "@types/react-dom": "^19.2.2",
+    "@types/sanitize-html": "^2.16.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.90.0"
+  }
+}

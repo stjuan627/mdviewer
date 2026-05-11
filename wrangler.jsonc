@@ -1,0 +1,39 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "markdownbox",
+  "account_id": "b54758ce0a799970f312180ab950589e",
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2026-05-11",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "env": {
+    "dev": {
+      "name": "markdownbox-dev",
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "markdownbox-dev",
+          "database_id": "a6bc231b-ecbc-4a26-bcd2-26ca587e34a2",
+          "migrations_dir": "db/migrations"
+        }
+      ]
+    },
+    "production": {
+      "name": "markdownbox",
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "markdownbox-prod",
+          "database_id": "9da89af0-6ad0-404e-bbdc-2d45f3e0315f",
+          "migrations_dir": "db/migrations"
+        }
+      ]
+    }
+  }
+}

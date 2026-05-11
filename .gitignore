@@ -1,0 +1,8 @@
+node_modules
+.astro
+.wrangler
+playwright-report
+test-results
+dist
+.env
+.DS_Store
