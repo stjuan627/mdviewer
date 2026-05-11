@@ -1,0 +1,7 @@
+export const DEFAULT_VIEW: MarkdownBoxView = 'article';
+export const WORKBENCH_VIEWS: MarkdownBoxView[] = ['article', 'release'];
+export const MAX_MARKDOWN_LENGTH = 12000;
+export const MAX_URL_PAYLOAD_LENGTH = 3500;
+export const RENDER_DEBOUNCE_MS = 150;
+export const RENDERER_VERSION = '2026-05-11.1';
+export const SHARE_SCHEMA_VERSION = 1;

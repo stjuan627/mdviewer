@@ -1,0 +1,42 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getShareRecord } from '@/lib/share';
+import { viewRegistry } from '@/lib/views';
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
+const id = Astro.params.id ?? '';
+const record = id ? await getShareRecord((env as CloudflareEnv).DB, id) : null;
+const unavailable = !record || record.invalidatedAt;
+const title = unavailable ? 'Share unavailable — markdown.box' : `${viewRegistry[record.view].label} share — markdown.box`;
+const editHref = record
+  ? `/workbench?view=${record.view}&source=share&payload=${encodeURIComponent(record.markdown)}`
+  : '/workbench?view=article';
+---
+
+<BaseLayout title={title} description="Public share page generated from the markdown.box workbench.">
+  <main class="share-shell">
+    <div class="share-topbar">
+      <div>
+        <a class="button button-secondary" href={editHref}>返回工作台继续编辑</a>
+      </div>
+      {record ? (
+        <div class="share-meta">
+          <div>rendererVersion：{record.rendererVersion}</div>
+          <div>createdAt：{record.createdAt}</div>
+        </div>
+      ) : null}
+    </div>
+
+    {unavailable ? (
+      <section class="hero-card">
+        <span class="hero-kicker">Share unavailable</span>
+        <h1 class="hero-title">这个分享结果不存在，或者已经失效。</h1>
+        <p class="hero-copy">请返回工作台重新生成一个分享链接。</p>
+      </section>
+    ) : (
+      <section class="preview-frame" data-testid="share-frame" set:html={record.snapshotHtml} />
+    )}
+  </main>
+</BaseLayout>

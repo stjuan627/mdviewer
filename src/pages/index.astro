@@ -1,0 +1,36 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="markdown.box — Markdown publishing workbench" description="Turn one Markdown draft into article and release-ready outputs.">
+  <main class="page">
+    <div class="shell">
+      <section class="hero-card">
+        <span class="hero-kicker">Static-first, shareable, memorable</span>
+        <h1 class="hero-title">不是另一个 formatter，而是 Markdown 发布工作台。</h1>
+        <p class="hero-copy">
+          同一份 Markdown，直接切成 Article View 或 Release View，再复制 HTML 或生成公开分享页。
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="/workbench?view=article">打开工作台</a>
+          <a class="button button-secondary" href="/markdown-viewer">试试 markdown viewer 入口</a>
+        </div>
+      </section>
+
+      <section class="list-grid">
+        <article class="list-card">
+          <h2>Article View</h2>
+          <p class="muted">面向博客、教程和长文发布，强调层级、可读性和代码块展示。</p>
+        </article>
+        <article class="list-card">
+          <h2>Release View</h2>
+          <p class="muted">面向 changelog 和产品更新，突出 highlights、版本结构和分组。</p>
+        </article>
+        <article class="list-card">
+          <h2>Shareable result</h2>
+          <p class="muted">保存 snapshotHtml 与 rendererVersion，让分享页和预览结果一致。</p>
+        </article>
+      </section>
+    </div>
+  </main>
+</BaseLayout>
