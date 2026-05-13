@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getShareRecord } from '@/lib/share';
-import { viewRegistry } from '@/lib/views';
 import { env } from 'cloudflare:workers';
 
 export const prerender = false;
@@ -9,10 +8,10 @@ export const prerender = false;
 const id = Astro.params.id ?? '';
 const record = id ? await getShareRecord((env as CloudflareEnv).DB, id) : null;
 const unavailable = !record || record.invalidatedAt;
-const title = unavailable ? 'Share unavailable — markdown.box' : `${viewRegistry[record.view].label} share — markdown.box`;
+const title = unavailable ? 'Share unavailable — markdown.box' : 'Shared preview — markdown.box';
 const editHref = record
-  ? `/workbench?view=${record.view}&source=share&shareId=${record.id}`
-  : '/workbench?view=article';
+  ? `/workbench?source=share&shareId=${record.id}`
+  : '/workbench';
 ---
 
 <BaseLayout title={title} description="Public share page generated from the markdown.box workbench.">

@@ -5,12 +5,11 @@ import { parseWorkbenchSearchParams } from '@/lib/schemas';
 import { buildShareRecord } from '@/lib/share';
 
 describe('renderer parity', () => {
-  it('keeps preview html equal to snapshotHtml for article view', () => {
-    const preview = renderResult(defaultMarkdown, 'article');
+  it('keeps preview html equal to snapshotHtml', () => {
+    const preview = renderResult(defaultMarkdown);
     const share = buildShareRecord({
       id: 'share-1',
       markdown: defaultMarkdown,
-      view: 'article',
       createdAt: '2026-05-11T00:00:00.000Z',
     });
 
@@ -18,17 +17,13 @@ describe('renderer parity', () => {
     expect(share.rendererVersion).toBe(preview.rendererVersion);
   });
 
-  it('keeps preview html equal to snapshotHtml for release view', () => {
-    const preview = renderResult(defaultMarkdown, 'release');
-    const share = buildShareRecord({
-      id: 'share-2',
-      markdown: defaultMarkdown,
-      view: 'release',
-      createdAt: '2026-05-11T00:00:00.000Z',
-    });
+  it('renders only the markdown HTML without injected shell content', () => {
+    const preview = renderResult(defaultMarkdown);
+    const matches = preview.html.match(/<h1\b/g) ?? [];
 
-    expect(share.snapshotHtml).toBe(preview.html);
-    expect(share.rendererVersion).toBe(preview.rendererVersion);
+    expect(matches).toHaveLength(1);
+    expect(preview.html).not.toContain('result-shell');
+    expect(preview.html).not.toContain('Release notes');
   });
 });
 
@@ -52,11 +47,10 @@ describe('sanitize rules', () => {
 });
 
 describe('workbench search params', () => {
-  it('falls back to article view on invalid view', () => {
+  it('ignores legacy view params', () => {
     const params = new URLSearchParams({ view: 'weird' });
     const parsed = parseWorkbenchSearchParams(params);
 
-    expect(parsed.view).toBe('article');
     expect(parsed.payloadDropped).toBe(false);
   });
 
@@ -68,7 +62,6 @@ describe('workbench search params', () => {
     const parsed = parseWorkbenchSearchParams(params);
 
     expect(parsed.payloadDropped).toBe(true);
-    expect(parsed.view).toBe('article');
     expect(parsed.markdown).toBe(defaultMarkdown);
   });
 });

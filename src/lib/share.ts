@@ -4,7 +4,6 @@ import { renderResult } from '@/lib/renderer';
 export type ShareRecord = {
   id: string;
   markdown: string;
-  view: MarkdownBoxView;
   snapshotHtml: string;
   rendererVersion: string;
   createdAt: string;
@@ -12,13 +11,12 @@ export type ShareRecord = {
   schemaVersion: number;
 };
 
-export function buildShareRecord(input: { id: string; markdown: string; view: MarkdownBoxView; createdAt?: string }): ShareRecord {
-  const rendered = renderResult(input.markdown, input.view);
+export function buildShareRecord(input: { id: string; markdown: string; createdAt?: string }): ShareRecord {
+  const rendered = renderResult(input.markdown);
 
   return {
     id: input.id,
     markdown: input.markdown,
-    view: input.view,
     snapshotHtml: rendered.html,
     rendererVersion: rendered.rendererVersion,
     createdAt: input.createdAt ?? new Date().toISOString(),
@@ -36,7 +34,7 @@ export async function insertShareRecord(db: D1Database, record: ShareRecord) {
     .bind(
       record.id,
       record.markdown,
-      record.view,
+      'article',
       record.snapshotHtml,
       record.rendererVersion,
       record.createdAt,
@@ -58,7 +56,6 @@ export async function getShareRecord(db: D1Database, id: string) {
     .first<{
       id: string;
       markdown: string;
-      view: MarkdownBoxView;
       snapshot_html: string;
       renderer_version: string;
       created_at: string;
@@ -73,7 +70,6 @@ export async function getShareRecord(db: D1Database, id: string) {
   return {
     id: result.id,
     markdown: result.markdown,
-    view: result.view,
     snapshotHtml: result.snapshot_html,
     rendererVersion: result.renderer_version,
     createdAt: result.created_at,

@@ -28,7 +28,6 @@ export function WorkbenchBoot() {
       if (navigationPayload) {
         const nextInit: WorkbenchRouteInit = {
           markdown: navigationPayload.markdown,
-          view: navigationPayload.view,
           source: navigationPayload.source,
           payloadDropped: false,
           shareId: null,
@@ -43,14 +42,13 @@ export function WorkbenchBoot() {
       if (routeInit.shareId) {
         try {
           const response = await fetch(`/api/share/${routeInit.shareId}`);
-          const data: { markdown?: string; view?: MarkdownBoxView; error?: string } = await response.json();
+          const data: { markdown?: string; error?: string } = await response.json();
 
-          if (response.ok && typeof data.markdown === 'string' && (data.view === 'article' || data.view === 'release')) {
+          if (response.ok && typeof data.markdown === 'string') {
             if (!cancelled) {
               setInit({
                 ...routeInit,
                 markdown: data.markdown,
-                view: data.view,
                 payloadDropped: false,
               });
             }
@@ -76,7 +74,6 @@ export function WorkbenchBoot() {
   return (
     <Workbench
       initialMarkdown={init.markdown}
-      initialView={init.view}
       source={init.source}
       payloadDropped={init.payloadDropped}
     />

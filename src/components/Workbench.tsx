@@ -9,16 +9,13 @@ import {
   $markdown,
   $rendered,
   $shareState,
-  $view,
   commitDraftMarkdown,
   completeShare,
   failShare,
   hydrateWorkbench,
   startShare,
-  switchWorkbenchView,
   updateDraftMarkdown,
 } from '@/lib/workbench-store';
-import { viewRegistry } from '@/lib/views';
 
 const primaryPage = { label: 'Markdown Workbench', href: '/workbench', active: true, icon: 'workbench' };
 
@@ -62,14 +59,12 @@ const editorToolbarIcons = [
 
 export type WorkbenchProps = {
   initialMarkdown: string;
-  initialView: MarkdownBoxView;
   source: string | null;
   payloadDropped: boolean;
 };
 
-export function Workbench({ initialMarkdown, initialView, source, payloadDropped }: WorkbenchProps) {
+export function Workbench({ initialMarkdown, source, payloadDropped }: WorkbenchProps) {
   const draftMarkdown = useStore($draftMarkdown);
-  const view = useStore($view);
   const shareState = useStore($shareState);
   const rendered = useStore($rendered);
   const editorScrollRef = useRef<HTMLElement | null>(null);
@@ -82,8 +77,8 @@ export function Workbench({ initialMarkdown, initialView, source, payloadDropped
   );
 
   useEffect(() => {
-    hydrateWorkbench({ markdown: initialMarkdown, view: initialView });
-  }, [initialMarkdown, initialView]);
+    hydrateWorkbench({ markdown: initialMarkdown });
+  }, [initialMarkdown]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -94,12 +89,6 @@ export function Workbench({ initialMarkdown, initialView, source, payloadDropped
       window.clearTimeout(timeoutId);
     };
   }, [draftMarkdown]);
-
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('view', view);
-    window.history.replaceState({}, '', url);
-  }, [view]);
 
   useEffect(() => {
     const editorScroller = editorScrollRef.current;
@@ -166,7 +155,6 @@ export function Workbench({ initialMarkdown, initialView, source, payloadDropped
         },
         body: JSON.stringify({
           markdown,
-          view,
         }),
       });
 
@@ -298,20 +286,6 @@ export function Workbench({ initialMarkdown, initialView, source, payloadDropped
             <section className="workbench-surface">
               <div className="workbench-toolbar">
                 <div className="workbench-toolbar-left">
-                  <div className="tabs workbench-tabs" aria-label="View switcher">
-                    {Object.values(viewRegistry).map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        data-testid={`view-tab-${item.id}`}
-                        className={`tab workbench-tab ${view === item.id ? 'is-active' : ''}`}
-                        onClick={() => switchWorkbenchView(item.id)}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="workbench-divider" aria-hidden="true" />
                   <div className="workbench-editor-actions" aria-label="Editor formatting toolbar">
                     {editorToolbarIcons.map((icon) => (
                       <button key={icon} type="button" className={`toolbar-icon-button toolbar-icon-${icon}`} aria-label={`${icon} placeholder`}>
@@ -343,8 +317,6 @@ export function Workbench({ initialMarkdown, initialView, source, payloadDropped
               </div>
 
               <div className="toolbar-notice" data-testid="workbench-notice" role="status">
-                <span>当前视图：{viewRegistry[view].label}</span>
-                {source ? <span>入口来源：{source}</span> : null}
                 {payloadDropped ? <span>已回落到默认示例</span> : null}
                 {shareState.shareUrl ? <span>分享链接已创建</span> : null}
                 {shareState.error ? <span>{shareState.error}</span> : null}

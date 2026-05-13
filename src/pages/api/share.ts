@@ -23,7 +23,6 @@ export const POST: APIRoute = async ({ request, url }) => {
       buildShareRecord({
         id,
         markdown,
-        view: result.data.view,
       }),
     );
 

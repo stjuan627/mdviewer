@@ -16,11 +16,10 @@ export function ViewerWorkbenchEntry({ initialMarkdown }: ViewerWorkbenchEntryPr
 
     stageWorkbenchNavigationPayload({
       markdown,
-      view: 'article',
       source: 'markdown-viewer',
     });
 
-    await navigate('/workbench?view=article&source=markdown-viewer');
+    await navigate('/workbench?source=markdown-viewer');
   }
 
   return (
@@ -42,9 +41,9 @@ export function ViewerWorkbenchEntry({ initialMarkdown }: ViewerWorkbenchEntryPr
       />
       <div className="hero-actions">
         <button className="button-primary" type="submit">
-          进入 Article workbench
+          进入 Workbench
         </button>
-        <a className="button button-secondary" href="/workbench?view=article">
+        <a className="button button-secondary" href="/workbench">
           直接看默认示例
         </a>
       </div>

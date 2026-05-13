@@ -4,13 +4,11 @@ import {
   $markdown,
   $rendered,
   $shareState,
-  $view,
   commitDraftMarkdown,
   completeShare,
   failShare,
   hydrateWorkbench,
   startShare,
-  switchWorkbenchView,
   updateDraftMarkdown,
 } from '@/lib/workbench-store';
 
@@ -18,14 +16,12 @@ describe('workbench store', () => {
   beforeEach(() => {
     hydrateWorkbench({
       markdown: '# Hello',
-      view: 'article',
     });
   });
 
-  it('hydrates draft, committed markdown and view together', () => {
+  it('hydrates draft and committed markdown together', () => {
     expect($draftMarkdown.get()).toBe('# Hello');
     expect($markdown.get()).toBe('# Hello');
-    expect($view.get()).toBe('article');
     expect($shareState.get()).toEqual({
       isSharing: false,
       shareUrl: null,
@@ -40,19 +36,6 @@ describe('workbench store', () => {
     expect($markdown.get()).toBe('## Updated\n\nBody');
     expect($rendered.get().html).toContain('Updated');
     expect($rendered.get().html).toContain('Body');
-  });
-
-  it('switches view and clears share state', () => {
-    completeShare('/share/demo');
-
-    switchWorkbenchView('release');
-
-    expect($view.get()).toBe('release');
-    expect($shareState.get()).toEqual({
-      isSharing: false,
-      shareUrl: null,
-      error: null,
-    });
   });
 
   it('tracks share lifecycle', () => {

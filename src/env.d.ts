@@ -6,8 +6,6 @@ declare module 'cloudflare:workers' {
 }
 
 declare global {
-  type MarkdownBoxView = 'article' | 'release';
-
   interface CloudflareEnv {
     DB: D1Database;
     ASSETS: Fetcher;
