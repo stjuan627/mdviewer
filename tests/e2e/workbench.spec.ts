@@ -1,4 +1,11 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+async function replaceMarkdown(page: Page, markdown: string) {
+  const editor = page.getByTestId('markdown-input').locator('.cm-content');
+  await editor.click();
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+  await page.keyboard.type(markdown);
+}
 
 test('viewer -> article -> share flow works', async ({ page, context }) => {
   await page.goto('/markdown-viewer');
@@ -24,9 +31,9 @@ test('viewer -> article -> share flow works', async ({ page, context }) => {
 test('invalid view falls back and release tab updates preview', async ({ page }) => {
   await page.goto('/workbench?view=invalid');
 
-  await expect(page.getByText('当前视图：Article')).toBeVisible();
+  await expect(page.getByTestId('workbench-notice')).toContainText('当前视图：Article');
   await page.getByTestId('view-tab-release').click();
-  await expect(page.getByText('当前视图：Release')).toBeVisible();
+  await expect(page.getByTestId('workbench-notice')).toContainText('当前视图：Release');
   await expect(page.getByTestId('preview-frame')).toContainText('Release notes');
 });
 
@@ -35,12 +42,12 @@ test('payload overflow falls back to default example', async ({ page }) => {
   await page.goto(`/workbench?view=article&payload=${payload}`);
 
   await expect(page.getByTestId('workbench-notice')).toContainText('已回落到默认示例');
-  await expect(page.getByTestId('markdown-input')).toHaveValue(/Markdown Box v0.1/);
+  await expect(page.getByTestId('markdown-input')).toContainText('Markdown Box v0.1');
 });
 
 test('malicious markdown is sanitized in preview', async ({ page }) => {
   await page.goto('/workbench?view=article');
-  await page.getByTestId('markdown-input').fill('# Safe\n\n<script>alert(1)</script>\n\n[a](javascript:alert(1))\n\n<img src="https://example.com/x.png" onerror="alert(1)" />');
+  await replaceMarkdown(page, '# Safe\n\n<script>alert(1)</script>\n\n[a](javascript:alert(1))\n\n<img src="https://example.com/x.png" onerror="alert(1)" />');
 
   const preview = page.getByTestId('preview-frame');
 

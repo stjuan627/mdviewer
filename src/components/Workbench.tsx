@@ -1,77 +1,64 @@
-import { useEffect, useMemo, useReducer, useRef } from 'react';
-import { DEFAULT_VIEW, RENDER_DEBOUNCE_MS, SHARE_SCHEMA_VERSION } from '@/lib/constants';
-import { renderResult } from '@/lib/renderer';
-import { normalizeMarkdown } from '@/lib/schemas';
+import { useEffect, useMemo, useRef } from 'react';
+import CodeMirror from '@uiw/react-codemirror';
+import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
+import { languages } from '@codemirror/language-data';
+import { useStore } from '@nanostores/react';
+import { RENDER_DEBOUNCE_MS } from '@/lib/constants';
+import {
+  $draftMarkdown,
+  $markdown,
+  $rendered,
+  $shareState,
+  $view,
+  commitDraftMarkdown,
+  completeShare,
+  failShare,
+  hydrateWorkbench,
+  startShare,
+  switchWorkbenchView,
+  updateDraftMarkdown,
+} from '@/lib/workbench-store';
 import { viewRegistry } from '@/lib/views';
 
-type Notice = {
-  tone: 'neutral' | 'success' | 'error';
-  message: string;
-} | null;
+const primaryPage = { label: 'Markdown Workbench', href: '/workbench', active: true, icon: 'workbench' };
 
-type State = {
-  markdown: string;
-  draftMarkdown: string;
-  view: MarkdownBoxView;
-  notice: Notice;
-  isSharing: boolean;
-  shareUrl: string | null;
-  copyTick: number;
-  source: string | null;
-  payloadDropped: boolean;
-};
+const converterPages = [
+  { label: 'Markdown to HTML', meta: 'Soon', href: null, icon: 'html' },
+  { label: 'Markdown to Image', meta: 'Soon', href: null, icon: 'image' },
+  { label: 'TOC Generator', meta: 'Soon', href: null, icon: 'toc' },
+];
 
-type Action =
-  | { type: 'edit'; markdown: string }
-  | { type: 'commit' }
-  | { type: 'switch-view'; view: MarkdownBoxView }
-  | { type: 'set-notice'; notice: Notice }
-  | { type: 'share-start' }
-  | { type: 'share-success'; shareUrl: string }
-  | { type: 'share-error'; message: string }
-  | { type: 'copy-success' }
-  | { type: 'copy-error'; message: string };
+const resourcePages = [
+  { label: 'Guides', meta: 'Library', href: null, icon: 'guides' },
+  { label: 'Examples', meta: 'Library', href: null, icon: 'examples' },
+  { label: "What's New", meta: 'Updates', href: null, icon: 'updates' },
+];
 
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case 'edit':
-      return { ...state, draftMarkdown: action.markdown };
-    case 'commit': {
-      const nextMarkdown = normalizeMarkdown(state.draftMarkdown) || state.markdown;
-      return { ...state, markdown: nextMarkdown };
-    }
-    case 'switch-view':
-      return {
-        ...state,
-        view: action.view,
-        shareUrl: null,
-        notice: { tone: 'neutral', message: `${viewRegistry[action.view].label} view 已更新。` },
-      };
-    case 'set-notice':
-      return { ...state, notice: action.notice };
-    case 'share-start':
-      return { ...state, isSharing: true, notice: { tone: 'neutral', message: '正在创建分享链接…' } };
-    case 'share-success':
-      return {
-        ...state,
-        isSharing: false,
-        shareUrl: action.shareUrl,
-        notice: { tone: 'success', message: '分享链接已创建。' },
-      };
-    case 'share-error':
-      return { ...state, isSharing: false, notice: { tone: 'error', message: action.message } };
-    case 'copy-success':
-      return {
-        ...state,
-        copyTick: state.copyTick + 1,
-        notice: { tone: 'success', message: '已复制净化后的 HTML。' },
-      };
-    case 'copy-error':
-      return { ...state, notice: { tone: 'error', message: action.message } };
-    default:
-      return state;
-  }
-}
+const supportPages = [
+  { label: 'About markdown.box', meta: 'About', href: null, icon: 'about' },
+  { label: 'Roadmap', meta: 'Plan', href: null, icon: 'roadmap' },
+  { label: 'Help & Feedback', meta: 'Support', href: null, icon: 'help' },
+];
+
+const topActions = [
+  { label: 'Theme', kind: 'icon-sun' },
+  { label: 'Shortcuts', kind: 'icon-command' },
+  { label: 'Export', kind: 'button-export' },
+];
+
+const editorToolbarIcons = [
+  'bold',
+  'italic',
+  'strike',
+  'code',
+  'link',
+  'image',
+  'bullets',
+  'numbers',
+  'quote',
+  'snippet',
+  'more',
+];
 
 export type WorkbenchProps = {
   initialMarkdown: string;
@@ -80,177 +67,320 @@ export type WorkbenchProps = {
   payloadDropped: boolean;
 };
 
-export function Workbench({ initialMarkdown, initialView, source, payloadDropped }: WorkbenchProps) {
-  const [state, dispatch] = useReducer(reducer, {
-    markdown: initialMarkdown,
-    draftMarkdown: initialMarkdown,
-    view: initialView,
-    notice: payloadDropped ? { tone: 'neutral', message: 'URL 里的内容过长或非法，已回落到默认示例。' } : null,
-    isSharing: false,
-    shareUrl: null,
-    copyTick: 0,
-    source,
-    payloadDropped,
-  });
-  const debounceRef = useRef<number | null>(null);
+export function Workbench({ initialMarkdown, initialView }: WorkbenchProps) {
+  const draftMarkdown = useStore($draftMarkdown);
+  const view = useStore($view);
+  const shareState = useStore($shareState);
+  const rendered = useStore($rendered);
+  const editorScrollRef = useRef<HTMLElement | null>(null);
+  const previewScrollRef = useRef<HTMLDivElement | null>(null);
+  const syncingPaneRef = useRef<'editor' | 'preview' | null>(null);
+
+  const extensions = useMemo(
+    () => [markdown({ base: markdownLanguage, codeLanguages: languages })],
+    []
+  );
 
   useEffect(() => {
-    if (debounceRef.current) {
-      window.clearTimeout(debounceRef.current);
-    }
+    hydrateWorkbench({ markdown: initialMarkdown, view: initialView });
+  }, [initialMarkdown, initialView]);
 
-    debounceRef.current = window.setTimeout(() => {
-      dispatch({ type: 'commit' });
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      commitDraftMarkdown();
     }, RENDER_DEBOUNCE_MS);
 
     return () => {
-      if (debounceRef.current) {
-        window.clearTimeout(debounceRef.current);
-      }
+      window.clearTimeout(timeoutId);
     };
-  }, [state.draftMarkdown]);
+  }, [draftMarkdown]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
-    url.searchParams.set('view', state.view);
+    url.searchParams.set('view', view);
     window.history.replaceState({}, '', url);
-  }, [state.view]);
+  }, [view]);
 
-  const rendered = useMemo(() => renderResult(state.markdown, state.view), [state.markdown, state.view]);
-  const currentView = viewRegistry[state.view] ?? viewRegistry[DEFAULT_VIEW];
+  useEffect(() => {
+    const editorScroller = editorScrollRef.current;
+    const previewScroller = previewScrollRef.current;
+
+    if (!editorScroller || !previewScroller) {
+      return;
+    }
+
+    const syncScroll = (source: HTMLElement, target: HTMLElement, pane: 'editor' | 'preview') => {
+      if (syncingPaneRef.current && syncingPaneRef.current !== pane) {
+        return;
+      }
+
+      const sourceRange = source.scrollHeight - source.clientHeight;
+      const targetRange = target.scrollHeight - target.clientHeight;
+      const nextRatio = sourceRange > 0 ? source.scrollTop / sourceRange : 0;
+
+      syncingPaneRef.current = pane;
+      target.scrollTop = targetRange > 0 ? nextRatio * targetRange : 0;
+
+      window.requestAnimationFrame(() => {
+        if (syncingPaneRef.current === pane) {
+          syncingPaneRef.current = null;
+        }
+      });
+    };
+
+    const handleEditorScroll = () => syncScroll(editorScroller, previewScroller, 'editor');
+    const handlePreviewScroll = () => syncScroll(previewScroller, editorScroller, 'preview');
+
+    editorScroller.addEventListener('scroll', handleEditorScroll, { passive: true });
+    previewScroller.addEventListener('scroll', handlePreviewScroll, { passive: true });
+
+    return () => {
+      editorScroller.removeEventListener('scroll', handleEditorScroll);
+      previewScroller.removeEventListener('scroll', handlePreviewScroll);
+    };
+  }, [rendered.html]);
 
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(rendered.html);
-      dispatch({ type: 'copy-success' });
     } catch {
-      dispatch({ type: 'copy-error', message: '复制失败，请检查浏览器剪贴板权限。' });
+      // Keep the toolbar visually quiet; clipboard failures can be surfaced later.
     }
   }
 
   async function handleShare() {
-    if (state.isSharing) {
+    if (shareState.isSharing) {
       return;
     }
 
-    dispatch({ type: 'share-start' });
+    startShare();
 
     try {
+      commitDraftMarkdown();
+      const markdown = $markdown.get();
+
       const response = await fetch('/api/share', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          markdown: state.markdown,
-          view: state.view,
+          markdown,
+          view,
         }),
       });
 
       const data: { shareUrl?: string; error?: string } = await response.json();
 
       if (!response.ok || typeof data.shareUrl !== 'string') {
-        throw new Error(data.error || '创建分享失败');
+        throw new Error(data.error || '创建分享失败，请重试。');
       }
 
-      dispatch({ type: 'share-success', shareUrl: data.shareUrl });
+      completeShare(data.shareUrl);
     } catch (error) {
-      const message = error instanceof Error ? error.message : '创建分享失败';
-      dispatch({ type: 'share-error', message });
+      const message = error instanceof Error ? error.message : '创建分享失败，请重试。';
+      failShare(message);
     }
   }
 
   return (
-    <div className="page">
-      <div className="shell">
-        <section className="hero-card">
-          <span className="hero-kicker">Markdown publishing workbench</span>
-          <h1 className="hero-title">同一份 Markdown，直接切成更适合发布的结果。</h1>
-          <p className="hero-copy">
-            static-first 的工作台壳子，里面是一整个 React island。你看到的是预览结果，不是编辑器炫技。
-          </p>
-          <div className="status-row">
-            <span>当前视图：{currentView.label}</span>
-            <span>rendererVersion：{rendered.rendererVersion}</span>
-            <span>schemaVersion：{SHARE_SCHEMA_VERSION}</span>
-            {state.source ? <span>source：{state.source}</span> : null}
-          </div>
-        </section>
+    <div className="app-container">
+      <aside className="sidebar">
+        <div className="sidebar-top">
+          <a className="brand" href="/">
+            <span className="brand-mark">M</span>
+            <span className="brand-copy">
+              <strong>markdown.box</strong>
+              <small>tools for writers & builders</small>
+            </span>
+          </a>
 
-        <div className="grid-two" style={{ marginTop: '20px' }}>
-          <section className="panel">
-            <div className="panel-header">
-              <div>
-                <h2 style={{ margin: 0 }}>Markdown input</h2>
-                <p className="muted" style={{ marginBottom: 0 }}>
-                  粘贴原始 Markdown，然后切 Article / Release 看结果差异。
-                </p>
-              </div>
-              <div className="tabs" aria-label="View switcher">
-                {Object.values(viewRegistry).map((view) => (
-                  <button
-                    key={view.id}
-                    type="button"
-                    data-testid={`view-tab-${view.id}`}
-                    className={`tab ${state.view === view.id ? 'is-active' : ''}`}
-                    onClick={() => dispatch({ type: 'switch-view', view: view.id })}
-                  >
-                    {view.label}
-                  </button>
+          <div className="sidebar-nav">
+            <a href={primaryPage.href} className="nav-item is-active">
+              <span className={`nav-icon nav-icon-${primaryPage.icon}`} aria-hidden="true" />
+              <span className="nav-copy nav-copy-single">
+                <span>{primaryPage.label}</span>
+              </span>
+            </a>
+
+            <div className="sidebar-group">
+              <div className="sidebar-label">Converters</div>
+              <div className="nav-list">
+                {converterPages.map((item) => (
+                  <div key={item.label} className="nav-item nav-item-placeholder" aria-disabled="true">
+                    <span className={`nav-icon nav-icon-${item.icon}`} aria-hidden="true" />
+                    <span className="nav-copy nav-copy-single">
+                      <span>{item.label}</span>
+                    </span>
+                  </div>
                 ))}
               </div>
             </div>
 
-            <textarea
-              aria-label="Markdown input"
-              className="editor"
-              data-testid="markdown-input"
-              value={state.draftMarkdown}
-              onChange={(event) => dispatch({ type: 'edit', markdown: event.target.value })}
-            />
-
-            <div className="inline-actions">
-              <button type="button" className="button-primary" data-testid="copy-html" onClick={handleCopy}>
-                复制净化后 HTML
-              </button>
-              <button
-                type="button"
-                className="button-secondary"
-                data-testid="create-share"
-                disabled={state.isSharing}
-                onClick={handleShare}
-              >
-                {state.isSharing ? '创建中…' : '创建分享链接'}
-              </button>
-              {state.shareUrl ? (
-                <a className="button button-secondary" data-testid="open-share" href={state.shareUrl} target="_blank" rel="noreferrer">
-                  打开分享页
-                </a>
-              ) : null}
-            </div>
-
-            {state.notice ? (
-              <div
-                className="notice"
-                data-testid="workbench-notice"
-                data-tone={state.notice.tone === 'neutral' ? undefined : state.notice.tone}
-              >
-                {state.notice.message}
-              </div>
-            ) : null}
-          </section>
-
-          <section className="panel">
-            <div className="panel-header">
-              <div>
-                <h2 style={{ margin: 0 }}>{currentView.label} preview</h2>
-                <p className="muted" style={{ marginBottom: 0 }}>{currentView.description}</p>
+            <div className="sidebar-group">
+              <div className="sidebar-label">Resources</div>
+              <div className="nav-list">
+                {resourcePages.map((item) => (
+                  <div key={item.label} className="nav-item nav-item-placeholder" aria-disabled="true">
+                    <span className={`nav-icon nav-icon-${item.icon}`} aria-hidden="true" />
+                    <span className="nav-copy nav-copy-single">
+                      <span>{item.label}</span>
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="preview-frame" data-testid="preview-frame" dangerouslySetInnerHTML={{ __html: rendered.html }} />
+
+            <div className="sidebar-group sidebar-group-secondary">
+              <div className="nav-list">
+                {supportPages.map((item) => (
+                  <div key={item.label} className="nav-item nav-item-placeholder" aria-disabled="true">
+                    <span className={`nav-icon nav-icon-${item.icon}`} aria-hidden="true" />
+                    <span className="nav-copy nav-copy-single">
+                      <span>{item.label}</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="sidebar-promo">
+            <span className="sidebar-promo-icon">✦</span>
+            <strong>More tools, coming soon.</strong>
+            <p>We&apos;re building a growing collection of markdown tools to help you write, convert, and publish with ease.</p>
+            <span className="sidebar-promo-link">See Roadmap <span aria-hidden="true">→</span></span>
+          </div>
+        </div>
+
+        <div className="sidebar-footer">
+          <div className="sidebar-profile">
+            <span className="sidebar-avatar">W</span>
+            <span className="sidebar-profile-copy">
+              <strong>Writer</strong>
+              <small>Free Plan</small>
+            </span>
+            <span className="sidebar-profile-caret">⌄</span>
+          </div>
+          <button type="button" className="sidebar-collapse">← Collapse</button>
+        </div>
+      </aside>
+
+      <main className="main-content">
+        <div className="shell shell-workbench">
+          <section className="workbench-stage">
+            <div className="workbench-hero">
+              <div className="workbench-hero-copy">
+                <h1>Markdown Workbench</h1>
+                <p>Write, preview, and perfect your Markdown. Fast, clean, and distraction-free.</p>
+              </div>
+
+              <div className="workbench-hero-actions" aria-label="Workbench actions">
+                {topActions.map((action) =>
+                  action.kind === 'button-export' ? (
+                    <button key={action.label} type="button" className="hero-action hero-action-export">
+                      <span>{action.label}</span>
+                      <span className="hero-action-caret" aria-hidden="true">⌄</span>
+                    </button>
+                  ) : (
+                    <button key={action.label} type="button" className="hero-action hero-action-icon" aria-label={action.label}>
+                      <span className={`hero-icon ${action.kind}`} aria-hidden="true" />
+                    </button>
+                  )
+                )}
+              </div>
+
+              <div className="workbench-hero-art" aria-hidden="true">
+                <img src="/workbench-hero-art.svg" alt="" />
+              </div>
+            </div>
+
+            <section className="workbench-surface">
+              <div className="workbench-toolbar">
+                <div className="workbench-toolbar-left">
+                  <div className="tabs workbench-tabs" aria-label="View switcher">
+                    {Object.values(viewRegistry).map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        data-testid={`view-tab-${item.id}`}
+                        className={`tab workbench-tab ${view === item.id ? 'is-active' : ''}`}
+                        onClick={() => switchWorkbenchView(item.id)}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="workbench-divider" aria-hidden="true" />
+                  <div className="workbench-editor-actions" aria-label="Editor formatting toolbar">
+                    {editorToolbarIcons.map((icon) => (
+                      <button key={icon} type="button" className={`toolbar-icon-button toolbar-icon-${icon}`} aria-label={`${icon} placeholder`}>
+                        <span className="toolbar-glyph" aria-hidden="true" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="workbench-toolbar-right">
+                  <button type="button" className="button-toolbar button-toolbar-copy" data-testid="copy-html" onClick={handleCopy}>
+                    Copy HTML
+                  </button>
+                  <button
+                    type="button"
+                    className="button-toolbar button-toolbar-primary"
+                    data-testid="create-share"
+                    disabled={shareState.isSharing}
+                    onClick={handleShare}
+                  >
+                    {shareState.isSharing ? 'Sharing…' : 'Share'}
+                  </button>
+                  {shareState.shareUrl ? (
+                    <a className="button-toolbar" data-testid="open-share" href={shareState.shareUrl} target="_blank" rel="noreferrer">
+                      Open
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="workbench-body">
+                <section className="workbench-pane workbench-pane-editor">
+                  <div className="workbench-editor-shell" data-testid="markdown-input" aria-label="Markdown input">
+                    <CodeMirror
+                      value={draftMarkdown}
+                      height="100%"
+                      minHeight="100%"
+                      basicSetup={{
+                        lineNumbers: false,
+                        highlightActiveLineGutter: false,
+                        foldGutter: false,
+                        dropCursor: false,
+                      }}
+                      className="workbench-codemirror"
+                      extensions={extensions}
+                      indentWithTab
+                      placeholder="Write your markdown here..."
+                      theme="light"
+                      onCreateEditor={(editorView) => {
+                        editorScrollRef.current = editorView.scrollDOM;
+                      }}
+                      onChange={updateDraftMarkdown}
+                    />
+                  </div>
+                </section>
+
+                <section className="workbench-pane workbench-pane-preview">
+                  <div
+                    ref={previewScrollRef}
+                    className="preview-frame prose"
+                    data-testid="preview-frame"
+                    dangerouslySetInnerHTML={{ __html: rendered.html }}
+                  />
+                </section>
+              </div>
+            </section>
           </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

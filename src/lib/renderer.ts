@@ -89,8 +89,7 @@ function wrapArticle(html: string, markdown: string) {
   return `
     <article class="result-shell result-shell--article">
       <header class="result-hero">
-        <p class="result-eyebrow">${view.eyebrow}</p>
-        <h1>${title}</h1>
+                <h1>${title}</h1>
         <p class="result-excerpt">${excerpt}</p>
       </header>
       <div class="result-body prose">${html}</div>
@@ -117,8 +116,7 @@ function wrapRelease(html: string, markdown: string) {
     <article class="result-shell result-shell--release">
       <header class="result-hero result-hero--release">
         <div>
-          <p class="result-eyebrow">${view.eyebrow}</p>
-          <h1>${title}</h1>
+                    <h1>${title}</h1>
           <p class="result-excerpt">${excerpt}</p>
         </div>
         <div class="result-badge">Release notes</div>
