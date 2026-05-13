@@ -67,7 +67,7 @@ export type WorkbenchProps = {
   payloadDropped: boolean;
 };
 
-export function Workbench({ initialMarkdown, initialView }: WorkbenchProps) {
+export function Workbench({ initialMarkdown, initialView, source, payloadDropped }: WorkbenchProps) {
   const draftMarkdown = useStore($draftMarkdown);
   const view = useStore($view);
   const shareState = useStore($shareState);
@@ -340,6 +340,14 @@ export function Workbench({ initialMarkdown, initialView }: WorkbenchProps) {
                     </a>
                   ) : null}
                 </div>
+              </div>
+
+              <div className="toolbar-notice" data-testid="workbench-notice" role="status">
+                <span>当前视图：{viewRegistry[view].label}</span>
+                {source ? <span>入口来源：{source}</span> : null}
+                {payloadDropped ? <span>已回落到默认示例</span> : null}
+                {shareState.shareUrl ? <span>分享链接已创建</span> : null}
+                {shareState.error ? <span>{shareState.error}</span> : null}
               </div>
 
               <div className="workbench-body">

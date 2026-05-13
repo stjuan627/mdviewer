@@ -16,6 +16,7 @@ export type WorkbenchInit = {
   view: MarkdownBoxView;
   source: string | null;
   payloadDropped: boolean;
+  shareId: string | null;
 };
 
 export function normalizeMarkdown(markdown: string) {
@@ -26,6 +27,7 @@ export function parseWorkbenchSearchParams(searchParams: URLSearchParams): Workb
   const viewResult = viewSchema.safeParse(searchParams.get('view'));
   const rawPayload = searchParams.get('payload');
   const source = searchParams.get('source');
+  const shareId = searchParams.get('shareId');
   const fallbackMarkdown = defaultMarkdown;
 
   if (!rawPayload) {
@@ -34,6 +36,7 @@ export function parseWorkbenchSearchParams(searchParams: URLSearchParams): Workb
       view: viewResult.success ? viewResult.data : DEFAULT_VIEW,
       source,
       payloadDropped: false,
+      shareId,
     };
   }
 
@@ -43,6 +46,7 @@ export function parseWorkbenchSearchParams(searchParams: URLSearchParams): Workb
       view: viewResult.success ? viewResult.data : DEFAULT_VIEW,
       source,
       payloadDropped: true,
+      shareId,
     };
   }
 
@@ -54,6 +58,7 @@ export function parseWorkbenchSearchParams(searchParams: URLSearchParams): Workb
       view: viewResult.success ? viewResult.data : DEFAULT_VIEW,
       source,
       payloadDropped: true,
+      shareId,
     };
   }
 
@@ -62,5 +67,6 @@ export function parseWorkbenchSearchParams(searchParams: URLSearchParams): Workb
     view: viewResult.success ? viewResult.data : DEFAULT_VIEW,
     source,
     payloadDropped: false,
+    shareId,
   };
 }

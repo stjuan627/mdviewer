@@ -11,7 +11,7 @@ const record = id ? await getShareRecord((env as CloudflareEnv).DB, id) : null;
 const unavailable = !record || record.invalidatedAt;
 const title = unavailable ? 'Share unavailable — markdown.box' : `${viewRegistry[record.view].label} share — markdown.box`;
 const editHref = record
-  ? `/workbench?view=${record.view}&source=share&payload=${encodeURIComponent(record.markdown)}`
+  ? `/workbench?view=${record.view}&source=share&shareId=${record.id}`
   : '/workbench?view=article';
 ---
 

@@ -1,13 +1,11 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import { ViewerWorkbenchEntry } from '@/components/ViewerWorkbenchEntry';
 import { defaultMarkdown } from '@/lib/sample-markdown';
-import { MAX_URL_PAYLOAD_LENGTH } from '@/lib/constants';
 
 export const prerender = true;
 
 const previewMarkdown = defaultMarkdown;
-const previewPayload = encodeURIComponent(previewMarkdown);
-const previewHref = `/workbench?view=article&source=markdown-viewer&payload=${previewPayload}`;
 ---
 
 <BaseLayout title="Markdown Viewer — markdown.box" description="Preview Markdown, then jump into the full publishing workbench.">
@@ -22,22 +20,8 @@ const previewHref = `/workbench?view=article&source=markdown-viewer&payload=${pr
       </section>
 
       <section class="panel" style="margin-top: 20px;">
-        <form class="viewer-form" action="/workbench" method="GET">
-          <input type="hidden" name="view" value="article" />
-          <input type="hidden" name="source" value="markdown-viewer" />
-          <div class="panel-header">
-            <div>
-              <h2 style="margin: 0;">Paste Markdown</h2>
-              <p class="muted" style="margin-bottom: 0;">短内容会直接通过 URL 带入 Workbench；超长内容会自动回落到默认示例。</p>
-            </div>
-          </div>
-          <textarea class="editor" aria-label="Markdown viewer input" name="payload">{previewMarkdown}</textarea>
-          <div class="hero-actions">
-            <button class="button-primary" type="submit">进入 Article workbench</button>
-            <a class="button button-secondary" href={previewHref}>直接看默认示例</a>
-          </div>
-        </form>
-        <p class="viewer-note">URL 安全载荷上限：{MAX_URL_PAYLOAD_LENGTH} 字符。</p>
+        <ViewerWorkbenchEntry client:load initialMarkdown={previewMarkdown} />
+        <p class="viewer-note">长文本会在当前会话内通过客户端状态带入 Workbench；分享链接仍由独立服务端机制处理。</p>
       </section>
     </div>
   </main>

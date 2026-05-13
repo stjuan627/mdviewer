@@ -1,19 +1,10 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { Workbench } from '@/components/Workbench';
-import { parseWorkbenchSearchParams } from '@/lib/schemas';
+import { WorkbenchBoot } from '@/components/WorkbenchBoot';
 
 export const prerender = false;
-
-const init = parseWorkbenchSearchParams(Astro.url.searchParams);
 ---
 
 <BaseLayout title="Workbench — markdown.box" description="Switch one Markdown draft into article or release-ready output.">
-  <Workbench
-    client:load
-    initialMarkdown={init.markdown}
-    initialView={init.view}
-    source={init.source}
-    payloadDropped={init.payloadDropped}
-  />
+  <WorkbenchBoot client:load />
 </BaseLayout>
