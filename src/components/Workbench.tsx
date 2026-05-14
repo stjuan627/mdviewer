@@ -3,6 +3,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { useStore } from '@nanostores/react';
+import { WorkbenchSidebar } from '@/components/WorkbenchSidebar';
 import { RENDER_DEBOUNCE_MS } from '@/lib/constants';
 import {
   $draftMarkdown,
@@ -16,26 +17,6 @@ import {
   startShare,
   updateDraftMarkdown,
 } from '@/lib/workbench-store';
-
-const primaryPage = { label: 'Markdown Workbench', href: '/workbench', active: true, icon: 'workbench' };
-
-const converterPages = [
-  { label: 'Markdown to HTML', meta: 'Soon', href: null, icon: 'html' },
-  { label: 'Markdown to Image', meta: 'Soon', href: null, icon: 'image' },
-  { label: 'TOC Generator', meta: 'Soon', href: null, icon: 'toc' },
-];
-
-const resourcePages = [
-  { label: 'Guides', meta: 'Library', href: null, icon: 'guides' },
-  { label: 'Examples', meta: 'Library', href: null, icon: 'examples' },
-  { label: "What's New", meta: 'Updates', href: null, icon: 'updates' },
-];
-
-const supportPages = [
-  { label: 'About markdown.box', meta: 'About', href: null, icon: 'about' },
-  { label: 'Roadmap', meta: 'Plan', href: null, icon: 'roadmap' },
-  { label: 'Help & Feedback', meta: 'Support', href: null, icon: 'help' },
-];
 
 const topActions = [
   { label: 'Theme', kind: 'icon-sun' },
@@ -173,86 +154,7 @@ export function Workbench({ initialMarkdown, source, payloadDropped }: Workbench
 
   return (
     <div className="app-container">
-      <aside className="sidebar">
-        <div className="sidebar-top">
-          <a className="brand" href="/">
-            <span className="brand-mark">M</span>
-            <span className="brand-copy">
-              <strong>markdown.box</strong>
-              <small>tools for writers & builders</small>
-            </span>
-          </a>
-
-          <div className="sidebar-nav">
-            <a href={primaryPage.href} className="nav-item is-active">
-              <span className={`nav-icon nav-icon-${primaryPage.icon}`} aria-hidden="true" />
-              <span className="nav-copy nav-copy-single">
-                <span>{primaryPage.label}</span>
-              </span>
-            </a>
-
-            <div className="sidebar-group">
-              <div className="sidebar-label">Converters</div>
-              <div className="nav-list">
-                {converterPages.map((item) => (
-                  <div key={item.label} className="nav-item nav-item-placeholder" aria-disabled="true">
-                    <span className={`nav-icon nav-icon-${item.icon}`} aria-hidden="true" />
-                    <span className="nav-copy nav-copy-single">
-                      <span>{item.label}</span>
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="sidebar-group">
-              <div className="sidebar-label">Resources</div>
-              <div className="nav-list">
-                {resourcePages.map((item) => (
-                  <div key={item.label} className="nav-item nav-item-placeholder" aria-disabled="true">
-                    <span className={`nav-icon nav-icon-${item.icon}`} aria-hidden="true" />
-                    <span className="nav-copy nav-copy-single">
-                      <span>{item.label}</span>
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="sidebar-group sidebar-group-secondary">
-              <div className="nav-list">
-                {supportPages.map((item) => (
-                  <div key={item.label} className="nav-item nav-item-placeholder" aria-disabled="true">
-                    <span className={`nav-icon nav-icon-${item.icon}`} aria-hidden="true" />
-                    <span className="nav-copy nav-copy-single">
-                      <span>{item.label}</span>
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="sidebar-promo">
-            <span className="sidebar-promo-icon">✦</span>
-            <strong>More tools, coming soon.</strong>
-            <p>We&apos;re building a growing collection of markdown tools to help you write, convert, and publish with ease.</p>
-            <span className="sidebar-promo-link">See Roadmap <span aria-hidden="true">→</span></span>
-          </div>
-        </div>
-
-        <div className="sidebar-footer">
-          <div className="sidebar-profile">
-            <span className="sidebar-avatar">W</span>
-            <span className="sidebar-profile-copy">
-              <strong>Writer</strong>
-              <small>Free Plan</small>
-            </span>
-            <span className="sidebar-profile-caret">⌄</span>
-          </div>
-          <button type="button" className="sidebar-collapse">← Collapse</button>
-        </div>
-      </aside>
+      <WorkbenchSidebar />
 
       <main className="main-content">
         <div className="shell shell-workbench">
