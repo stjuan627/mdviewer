@@ -17,6 +17,7 @@ import {
   startShare,
   updateDraftMarkdown,
 } from '@/lib/workbench-store';
+import { renderResult } from '@/lib/renderer';
 
 const topActions = [
   { label: 'Theme', kind: 'icon-sun' },
@@ -45,11 +46,21 @@ export type WorkbenchProps = {
 
 export function Workbench({ initialMarkdown, payloadDropped }: WorkbenchProps) {
   const draftMarkdown = useStore($draftMarkdown);
+  const committedMarkdown = useStore($markdown);
   const shareState = useStore($shareState);
   const rendered = useStore($rendered);
   const editorScrollRef = useRef<HTMLElement | null>(null);
   const previewScrollRef = useRef<HTMLDivElement | null>(null);
   const syncingPaneRef = useRef<'editor' | 'preview' | null>(null);
+  const hydratedInitialMarkdownRef = useRef<string | null>(null);
+  const initialRendered = useMemo(() => renderResult(initialMarkdown), [initialMarkdown]);
+
+  if (committedMarkdown === initialMarkdown) {
+    hydratedInitialMarkdownRef.current = initialMarkdown;
+  }
+
+  const previewHtml =
+    hydratedInitialMarkdownRef.current === initialMarkdown ? rendered.html : initialRendered.html;
 
   const extensions = useMemo(
     () => [markdown({ base: markdownLanguage, codeLanguages: languages })],
@@ -254,7 +265,7 @@ export function Workbench({ initialMarkdown, payloadDropped }: WorkbenchProps) {
                     ref={previewScrollRef}
                     className="preview-frame prose"
                     data-testid="preview-frame"
-                    dangerouslySetInnerHTML={{ __html: rendered.html }}
+                    dangerouslySetInnerHTML={{ __html: previewHtml }}
                   />
                 </section>
               </div>

@@ -35,6 +35,15 @@ test('legacy view param is ignored and preview stays pure', async ({ page }) => 
   await expect(page.getByTestId('preview-frame')).not.toContainText('Release notes');
 });
 
+test('home raw source already contains server-rendered preview html', async ({ request }) => {
+  const response = await request.get('/');
+  const html = await response.text();
+
+  expect(html).toContain('data-testid="preview-frame"');
+  expect(html).toContain('<h1>Markdown Box v0.1</h1>');
+  expect(html).toContain('<li>单一内容源</li>');
+});
+
 test('payload overflow falls back to default example', async ({ page }) => {
   const payload = 'x'.repeat(4000);
   await page.goto(`/?payload=${payload}`);
