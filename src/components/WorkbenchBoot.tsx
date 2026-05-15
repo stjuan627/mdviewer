@@ -15,52 +15,54 @@ function readRouteInit() {
   return buildWorkbenchRouteInit(new URL(window.location.href).searchParams);
 }
 
+function readInitialWorkbenchInit() {
+  const routeInit = readRouteInit();
+
+  if (typeof window === 'undefined') {
+    return routeInit;
+  }
+
+  const navigationPayload = consumeWorkbenchNavigationPayload();
+
+  if (!navigationPayload) {
+    return routeInit;
+  }
+
+  return {
+    markdown: navigationPayload.markdown,
+    source: navigationPayload.source,
+    payloadDropped: false,
+    shareId: null,
+    themeId: navigationPayload.themeId,
+  } satisfies WorkbenchRouteInit;
+}
+
 export function WorkbenchBoot() {
-  const [init, setInit] = useState<WorkbenchRouteInit>(() => readRouteInit());
+  const [init, setInit] = useState<WorkbenchRouteInit>(() => readInitialWorkbenchInit());
 
   useEffect(() => {
     let cancelled = false;
 
     async function bootstrap() {
       const routeInit = readRouteInit();
-      const navigationPayload = consumeWorkbenchNavigationPayload();
-
-      if (navigationPayload) {
-        const nextInit: WorkbenchRouteInit = {
-          markdown: navigationPayload.markdown,
-          source: navigationPayload.source,
-          payloadDropped: false,
-          shareId: null,
-        };
-
-        if (!cancelled) {
-          setInit(nextInit);
-        }
+      if (!routeInit.shareId) {
         return;
       }
 
-      if (routeInit.shareId) {
-        try {
-          const response = await fetch(`/api/share/${routeInit.shareId}`);
-          const data: { markdown?: string; error?: string } = await response.json();
+      try {
+        const response = await fetch(`/api/share/${routeInit.shareId}`);
+        const data: { markdown?: string; themeId?: WorkbenchRouteInit['themeId']; error?: string } = await response.json();
 
-          if (response.ok && typeof data.markdown === 'string') {
-            if (!cancelled) {
-              setInit({
-                ...routeInit,
-                markdown: data.markdown,
-                payloadDropped: false,
-              });
-            }
-            return;
-          }
-        } catch {
-          // Fall back to route defaults when share hydration fails.
+        if (response.ok && typeof data.markdown === 'string' && !cancelled) {
+          setInit({
+            ...routeInit,
+            markdown: data.markdown,
+            themeId: data.themeId ?? routeInit.themeId,
+            payloadDropped: false,
+          });
         }
-      }
-
-      if (!cancelled) {
-        setInit(routeInit);
+      } catch {
+        // Keep the already initialized route state when share hydration fails.
       }
     }
 
@@ -75,6 +77,7 @@ export function WorkbenchBoot() {
     <Workbench
       initialMarkdown={init.markdown}
       payloadDropped={init.payloadDropped}
+      initialThemeId={init.themeId}
     />
   );
 }

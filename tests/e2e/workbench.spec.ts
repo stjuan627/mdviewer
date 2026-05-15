@@ -12,8 +12,11 @@ test('viewer -> article -> share flow works', async ({ page, context }) => {
 
   await page.getByRole('button', { name: '进入 Workbench' }).click();
   await page.waitForURL(/\/\?source=markdown-viewer/);
+  await expect(page.locator('[data-workbench-hydrated="true"]')).toBeVisible();
 
-  await expect(page.getByTestId('preview-frame')).toContainText('Markdown Box v0.1');
+  await expect(page.getByTestId('preview-frame')).toContainText('Online Markdown Editor with Live Preview');
+  await page.locator('.theme-switcher-select').selectOption('nocturne');
+  await expect(page.getByTestId('preview-frame')).toHaveAttribute('data-theme', 'nocturne');
 
   await page.getByTestId('create-share').click();
   await expect(page.getByTestId('workbench-notice')).toContainText('分享链接已创建');
@@ -24,15 +27,23 @@ test('viewer -> article -> share flow works', async ({ page, context }) => {
   const sharePage = await context.newPage();
   await sharePage.goto(href!);
 
-  await expect(sharePage.getByTestId('share-frame')).toContainText('Markdown Box v0.1');
+  await expect(sharePage.getByTestId('share-frame')).toContainText('Online Markdown Editor with Live Preview');
+  await expect(sharePage.getByTestId('share-frame')).toHaveAttribute('data-theme', 'nocturne');
   await expect(sharePage.getByRole('link', { name: '返回工作台继续编辑' })).toBeVisible();
+});
+
+test('theme query drives preview theme', async ({ page }) => {
+  await page.goto('/?theme=blueprint');
+
+  await expect(page.getByTestId('preview-frame')).toHaveAttribute('data-theme', 'blueprint');
+  await expect(page.locator('.theme-switcher-select')).toHaveValue('blueprint');
 });
 
 test('legacy view param is ignored and preview stays pure', async ({ page }) => {
   await page.goto('/?view=invalid');
 
-  await expect(page.getByTestId('preview-frame')).toContainText('Markdown Box v0.1');
-  await expect(page.getByTestId('preview-frame')).not.toContainText('Release notes');
+  await expect(page.getByTestId('preview-frame')).toContainText('Online Markdown Editor with Live Preview');
+  await expect(page.getByTestId('preview-frame')).not.toContainText('Markdown Workbench');
 });
 
 test('home raw source already contains server-rendered preview html', async ({ request }) => {
@@ -40,8 +51,8 @@ test('home raw source already contains server-rendered preview html', async ({ r
   const html = await response.text();
 
   expect(html).toContain('data-testid="preview-frame"');
-  expect(html).toContain('<h1>Markdown Box v0.1</h1>');
-  expect(html).toContain('<li>单一内容源</li>');
+  expect(html).toContain('<h1>Online Markdown Editor with Live Preview</h1>');
+  expect(html).toContain('<h2>Why Choose a Browser-Based Markdown Editor</h2>');
 });
 
 test('payload overflow falls back to default example', async ({ page }) => {
@@ -49,7 +60,7 @@ test('payload overflow falls back to default example', async ({ page }) => {
   await page.goto(`/?payload=${payload}`);
 
   await expect(page.getByTestId('workbench-notice')).toContainText('已回落到默认示例');
-  await expect(page.getByTestId('markdown-input')).toContainText('Markdown Box v0.1');
+  await expect(page.getByTestId('markdown-input')).toContainText('Online Markdown Editor with Live Preview');
 });
 
 test('malicious markdown is sanitized in preview', async ({ page }) => {

@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { useStore } from '@nanostores/react';
+import { ChevronDown } from 'lucide-react';
 import { WorkbenchSidebar } from '@/components/WorkbenchSidebar';
 import { RENDER_DEBOUNCE_MS } from '@/lib/constants';
 import {
@@ -18,9 +19,9 @@ import {
   updateDraftMarkdown,
 } from '@/lib/workbench-store';
 import { renderResult } from '@/lib/renderer';
+import { themeOptions, type ThemeId } from '@/lib/themes';
 
 const topActions = [
-  { label: 'Theme', kind: 'icon-sun' },
   { label: 'Shortcuts', kind: 'icon-command' },
   { label: 'Export', kind: 'button-export' },
 ];
@@ -42,13 +43,16 @@ const editorToolbarIcons = [
 export type WorkbenchProps = {
   initialMarkdown: string;
   payloadDropped: boolean;
+  initialThemeId: ThemeId;
 };
 
-export function Workbench({ initialMarkdown, payloadDropped }: WorkbenchProps) {
+export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: WorkbenchProps) {
   const draftMarkdown = useStore($draftMarkdown);
   const committedMarkdown = useStore($markdown);
   const shareState = useStore($shareState);
   const rendered = useStore($rendered);
+  const [themeId, setThemeId] = useState<ThemeId>(initialThemeId);
+  const [isHydrated, setIsHydrated] = useState(false);
   const editorScrollRef = useRef<HTMLElement | null>(null);
   const previewScrollRef = useRef<HTMLDivElement | null>(null);
   const syncingPaneRef = useRef<'editor' | 'preview' | null>(null);
@@ -69,7 +73,12 @@ export function Workbench({ initialMarkdown, payloadDropped }: WorkbenchProps) {
 
   useEffect(() => {
     hydrateWorkbench({ markdown: initialMarkdown });
-  }, [initialMarkdown]);
+    setThemeId(initialThemeId);
+  }, [initialMarkdown, initialThemeId]);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -146,6 +155,7 @@ export function Workbench({ initialMarkdown, payloadDropped }: WorkbenchProps) {
         },
         body: JSON.stringify({
           markdown,
+          themeId,
         }),
       });
 
@@ -163,7 +173,7 @@ export function Workbench({ initialMarkdown, payloadDropped }: WorkbenchProps) {
   }
 
   return (
-    <div className="app-container">
+    <div className="app-container" data-workbench-hydrated={isHydrated ? 'true' : 'false'}>
       <WorkbenchSidebar />
 
       <main className="main-content">
@@ -176,6 +186,27 @@ export function Workbench({ initialMarkdown, payloadDropped }: WorkbenchProps) {
               </div>
 
               <div className="workbench-hero-actions" aria-label="Workbench actions">
+                <label className="theme-switcher" aria-label="Theme selector">
+                  <span className="theme-switcher-label">Theme</span>
+                  <div className="theme-switcher-select-wrap">
+                    <select
+                      className="theme-switcher-select"
+                      disabled={!isHydrated}
+                      value={themeId}
+                      onChange={(event) => setThemeId(event.target.value as ThemeId)}
+                    >
+                      {themeOptions.map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="theme-switcher-caret" aria-hidden="true" size={16} strokeWidth={1.8} />
+                  </div>
+                  <span className="theme-switcher-summary">
+                    {themeOptions.find((option) => option.id === themeId)?.summary}
+                  </span>
+                </label>
                 {topActions.map((action) =>
                   action.kind === 'button-export' ? (
                     <button key={action.label} type="button" className="hero-action hero-action-export">
@@ -264,6 +295,7 @@ export function Workbench({ initialMarkdown, payloadDropped }: WorkbenchProps) {
                   <div
                     ref={previewScrollRef}
                     className="preview-frame prose"
+                    data-theme={themeId}
                     data-testid="preview-frame"
                     dangerouslySetInnerHTML={{ __html: previewHtml }}
                   />

@@ -10,6 +10,7 @@ describe('renderer parity', () => {
     const share = buildShareRecord({
       id: 'share-1',
       markdown: defaultMarkdown,
+      themeId: 'paper',
       createdAt: '2026-05-11T00:00:00.000Z',
     });
 
@@ -23,7 +24,8 @@ describe('renderer parity', () => {
 
     expect(matches).toHaveLength(1);
     expect(preview.html).not.toContain('result-shell');
-    expect(preview.html).not.toContain('Release notes');
+    expect(preview.html).not.toContain('Markdown Workbench');
+    expect(preview.html).not.toContain('Write, preview, and perfect your Markdown.');
   });
 });
 

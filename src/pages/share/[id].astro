@@ -10,7 +10,7 @@ const record = id ? await getShareRecord((env as CloudflareEnv).DB, id) : null;
 const unavailable = !record || record.invalidatedAt;
 const title = unavailable ? 'Share unavailable — markdown.box' : 'Shared preview — markdown.box';
 const editHref = record
-  ? `/?source=share&shareId=${record.id}`
+  ? `/?source=share&shareId=${record.id}&theme=${record.themeId}`
   : '/';
 ---
 
@@ -35,7 +35,7 @@ const editHref = record
         <p class="hero-copy">请返回工作台重新生成一个分享链接。</p>
       </section>
     ) : (
-      <section class="preview-frame" data-testid="share-frame" set:html={record.snapshotHtml} />
+      <section class="preview-frame prose" data-theme={record.themeId} data-testid="share-frame" set:html={record.snapshotHtml} />
     )}
   </main>
 </BaseLayout>

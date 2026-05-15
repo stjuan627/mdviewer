@@ -1,6 +1,7 @@
 import { useState, type ComponentProps } from 'react';
 import { navigate } from 'astro:transitions/client';
 import { stageWorkbenchNavigationPayload } from '@/lib/workbench-navigation-store';
+import { DEFAULT_THEME_ID } from '@/lib/themes';
 
 type ViewerWorkbenchEntryProps = {
   initialMarkdown: string;
@@ -17,6 +18,7 @@ export function ViewerWorkbenchEntry({ initialMarkdown }: ViewerWorkbenchEntryPr
     stageWorkbenchNavigationPayload({
       markdown,
       source: 'markdown-viewer',
+      themeId: DEFAULT_THEME_ID,
     });
 
     await navigate('/?source=markdown-viewer');

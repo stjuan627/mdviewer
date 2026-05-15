@@ -1,10 +1,12 @@
 import { atom } from 'nanostores';
 import { defaultMarkdown } from '@/lib/sample-markdown';
 import { normalizeMarkdown, parseWorkbenchSearchParams } from '@/lib/schemas';
+import { DEFAULT_THEME_ID, type ThemeId } from '@/lib/themes';
 
 export type WorkbenchNavigationPayload = {
   markdown: string;
   source: string | null;
+  themeId: ThemeId;
 };
 
 export type WorkbenchRouteInit = {
@@ -12,6 +14,7 @@ export type WorkbenchRouteInit = {
   source: string | null;
   payloadDropped: boolean;
   shareId: string | null;
+  themeId: ThemeId;
 };
 
 export const $workbenchNavigationPayload = atom<WorkbenchNavigationPayload | null>(null);
@@ -20,6 +23,7 @@ export function stageWorkbenchNavigationPayload(payload: WorkbenchNavigationPayl
   $workbenchNavigationPayload.set({
     markdown: normalizeMarkdown(payload.markdown),
     source: payload.source,
+    themeId: payload.themeId,
   });
 }
 
@@ -37,6 +41,7 @@ export function buildWorkbenchRouteInit(searchParams: URLSearchParams): Workbenc
     source: parsed.source,
     payloadDropped: parsed.payloadDropped,
     shareId: parsed.shareId,
+    themeId: parsed.themeId,
   };
 }
 
@@ -46,5 +51,6 @@ export function getDefaultWorkbenchRouteInit(): WorkbenchRouteInit {
     source: null,
     payloadDropped: false,
     shareId: null,
+    themeId: DEFAULT_THEME_ID,
   };
 }

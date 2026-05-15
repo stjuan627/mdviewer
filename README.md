@@ -90,6 +90,7 @@ React 承担真正的重交互部分，核心入口是：
 3. 经过 debounce 后调用 `commitDraftMarkdown`
 4. 标准化 markdown
 5. 触发 `renderResult(markdown)` 重新生成预览 HTML
+6. 由独立 `themeId` 驱动同一份 HTML 的不同展示主题
 
 #### navigation store
 
@@ -119,6 +120,7 @@ React 承担真正的重交互部分，核心入口是：
 
 - preview 显示的是纯渲染结果
 - share 页展示的也是同一份渲染结果
+- 主题切换只改变外层容器的样式契约，不改变渲染 HTML
 - 不再在结果外层再拼额外的页面模板壳
 
 ### 5. Share 持久化层
@@ -145,6 +147,7 @@ share record 目前保存：
 - `id`
 - `markdown`
 - `snapshotHtml`
+- `themeId`
 - `rendererVersion`
 - `createdAt`
 - `invalidatedAt`

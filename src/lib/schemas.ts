@@ -1,18 +1,24 @@
 import { z } from 'zod';
 import { MAX_MARKDOWN_LENGTH, MAX_URL_PAYLOAD_LENGTH } from '@/lib/constants';
 import { defaultMarkdown } from '@/lib/sample-markdown';
+import { DEFAULT_THEME_ID, THEME_IDS } from '@/lib/themes';
 
 export const renderRequestSchema = z.object({
   markdown: z.string().trim().min(1).max(MAX_MARKDOWN_LENGTH),
 });
 
-export const createShareSchema = renderRequestSchema;
+export const themeIdSchema = z.enum(THEME_IDS);
+
+export const createShareSchema = renderRequestSchema.extend({
+  themeId: themeIdSchema.default(DEFAULT_THEME_ID),
+});
 
 export type WorkbenchInit = {
   markdown: string;
   source: string | null;
   payloadDropped: boolean;
   shareId: string | null;
+  themeId: z.infer<typeof themeIdSchema>;
 };
 
 export function normalizeMarkdown(markdown: string) {
@@ -23,6 +29,9 @@ export function parseWorkbenchSearchParams(searchParams: URLSearchParams): Workb
   const rawPayload = searchParams.get('payload');
   const source = searchParams.get('source');
   const shareId = searchParams.get('shareId');
+  const rawThemeId = searchParams.get('theme');
+  const parsedThemeId = themeIdSchema.safeParse(rawThemeId);
+  const themeId = parsedThemeId.success ? parsedThemeId.data : DEFAULT_THEME_ID;
   const fallbackMarkdown = defaultMarkdown;
 
   if (!rawPayload) {
@@ -31,6 +40,7 @@ export function parseWorkbenchSearchParams(searchParams: URLSearchParams): Workb
       source,
       payloadDropped: false,
       shareId,
+      themeId,
     };
   }
 
@@ -40,6 +50,7 @@ export function parseWorkbenchSearchParams(searchParams: URLSearchParams): Workb
       source,
       payloadDropped: true,
       shareId,
+      themeId,
     };
   }
 
@@ -51,6 +62,7 @@ export function parseWorkbenchSearchParams(searchParams: URLSearchParams): Workb
       source,
       payloadDropped: true,
       shareId,
+      themeId,
     };
   }
 
@@ -59,5 +71,6 @@ export function parseWorkbenchSearchParams(searchParams: URLSearchParams): Workb
     source,
     payloadDropped: false,
     shareId,
+    themeId,
   };
 }

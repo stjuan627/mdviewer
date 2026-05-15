@@ -20,5 +20,6 @@ export const GET: APIRoute = async ({ params }) => {
   return Response.json({
     id: record.id,
     markdown: record.markdown,
+    themeId: record.themeId,
   });
 };

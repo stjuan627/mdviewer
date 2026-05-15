@@ -16,6 +16,7 @@ export const POST: APIRoute = async ({ request, url }) => {
     }
 
     const markdown = normalizeMarkdown(result.data.markdown);
+    const themeId = result.data.themeId;
     const id = randomUUID().slice(0, 8);
 
     await insertShareRecord(
@@ -23,6 +24,7 @@ export const POST: APIRoute = async ({ request, url }) => {
       buildShareRecord({
         id,
         markdown,
+        themeId,
       }),
     );
 
