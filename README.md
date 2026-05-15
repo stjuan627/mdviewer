@@ -45,9 +45,8 @@
 
 Astro 负责页面入口、路由和整体壳层：
 
-- `/`：项目首页 / 产品入口
+- `/`：主工作台 / 产品首页
 - `/markdown-viewer`：轻量 viewer 入口
-- `/workbench`：主工作台
 - `/share/[id]`：公开分享页
 - `/api/share`：创建分享
 - `/api/share/[id]`：读取分享对应的 markdown
@@ -66,7 +65,7 @@ React 承担真正的重交互部分，核心入口是：
 
 - `WorkbenchBoot`：负责根据 URL、客户端暂存状态、shareId 来初始化工作台
 - `Workbench`：负责编辑器、预览、复制 HTML、创建分享、滚动同步等交互
-- `ViewerWorkbenchEntry`：把 viewer 输入的长文本通过客户端状态带入 workbench
+- `ViewerWorkbenchEntry`：把 viewer 输入的长文本通过客户端状态带入首页工作台
 - `WorkbenchSidebar`：提供工具导航和响应式侧边栏
 
 ### 3. 状态管理层
@@ -96,12 +95,12 @@ React 承担真正的重交互部分，核心入口是：
 
 文件：`src/lib/workbench-navigation-store.ts`
 
-负责同一会话内从 `/markdown-viewer` 跳转到 `/workbench` 时的临时 payload 传递。
+负责同一会话内从 `/markdown-viewer` 跳转到 `/` 时的临时 payload 传递。
 
 这个 store 的作用是：
 
 - 避免把长文本塞进 URL
-- 保持 viewer -> workbench 的顺滑跳转
+- 保持 viewer -> 首页工作台 的顺滑跳转
 - 将“同会话跳转”和“share 持久化”两种机制分离
 
 ### 4. 渲染层
@@ -134,7 +133,7 @@ React 承担真正的重交互部分，核心入口是：
 
 分享流程：
 
-1. workbench 发起 `POST /api/share`
+1. 首页工作台发起 `POST /api/share`
 2. 服务端校验 markdown
 3. 重新执行 `renderResult(markdown)`
 4. 生成 share record
@@ -153,7 +152,7 @@ share record 目前保存：
 
 分享页直接读取 `snapshotHtml` 渲染，因此它展示的是分享创建当时的快照结果。
 
-如果用户通过 share 回到 workbench，则由 `/api/share/[id]` 返回原始 markdown，再 hydrate 回编辑器。
+如果用户通过 share 回到首页工作台，则由 `/api/share/[id]` 返回原始 markdown，再 hydrate 回编辑器。
 
 ## 数据库设计
 
@@ -203,8 +202,7 @@ share record 目前保存：
 │   │   ├── api/
 │   │   ├── markdown-viewer/
 │   │   ├── share/
-│   │   ├── index.astro
-│   │   └── workbench.astro
+│   │   └── index.astro
 │   └── styles/
 │       └── global.css
 ├── astro.config.mjs

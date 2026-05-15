@@ -19,7 +19,7 @@ export function ViewerWorkbenchEntry({ initialMarkdown }: ViewerWorkbenchEntryPr
       source: 'markdown-viewer',
     });
 
-    await navigate('/workbench?source=markdown-viewer');
+    await navigate('/?source=markdown-viewer');
   }
 
   return (
@@ -43,7 +43,7 @@ export function ViewerWorkbenchEntry({ initialMarkdown }: ViewerWorkbenchEntryPr
         <button className="button-primary" type="submit">
           进入 Workbench
         </button>
-        <a className="button button-secondary" href="/workbench">
+        <a className="button button-secondary" href="/">
           直接看默认示例
         </a>
       </div>

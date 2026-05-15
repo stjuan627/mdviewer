@@ -74,7 +74,6 @@ export function WorkbenchBoot() {
   return (
     <Workbench
       initialMarkdown={init.markdown}
-      source={init.source}
       payloadDropped={init.payloadDropped}
     />
   );

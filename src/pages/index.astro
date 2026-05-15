@@ -1,36 +1,10 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import { WorkbenchBoot } from '@/components/WorkbenchBoot';
+
+export const prerender = false;
 ---
 
 <BaseLayout title="markdown.box — Markdown publishing workbench" description="Render Markdown into clean HTML, preview it instantly, and share the exact result.">
-  <main class="page">
-    <div class="shell">
-      <section class="hero-card">
-        <span class="hero-kicker">Static-first, shareable, memorable</span>
-        <h1 class="hero-title">不是另一个 formatter，而是 Markdown 发布工作台。</h1>
-        <p class="hero-copy">
-          把 Markdown 直接渲染成干净 HTML，实时预览、复制结果，再生成公开分享页。
-        </p>
-        <div class="hero-actions">
-          <a class="button button-primary" href="/workbench">打开工作台</a>
-          <a class="button button-secondary" href="/markdown-viewer">试试 markdown viewer 入口</a>
-        </div>
-      </section>
-
-      <section class="list-grid">
-        <article class="list-card">
-          <h2>Pure preview</h2>
-          <p class="muted">preview 只显示 markdown 渲染后的 HTML 结果，不再额外包产品壳层。</p>
-        </article>
-        <article class="list-card">
-          <h2>Exact HTML output</h2>
-          <p class="muted">复制到剪贴板的内容和页面预览完全一致，没有额外注入的标题、摘要或 CTA。</p>
-        </article>
-        <article class="list-card">
-          <h2>Shareable result</h2>
-          <p class="muted">保存 snapshotHtml 与 rendererVersion，让分享页和预览结果一致。</p>
-        </article>
-      </section>
-    </div>
-  </main>
+  <WorkbenchBoot client:load />
 </BaseLayout>

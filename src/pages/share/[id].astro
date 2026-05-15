@@ -10,8 +10,8 @@ const record = id ? await getShareRecord((env as CloudflareEnv).DB, id) : null;
 const unavailable = !record || record.invalidatedAt;
 const title = unavailable ? 'Share unavailable — markdown.box' : 'Shared preview — markdown.box';
 const editHref = record
-  ? `/workbench?source=share&shareId=${record.id}`
-  : '/workbench';
+  ? `/?source=share&shareId=${record.id}`
+  : '/';
 ---
 
 <BaseLayout title={title} description="Public share page generated from the markdown.box workbench.">

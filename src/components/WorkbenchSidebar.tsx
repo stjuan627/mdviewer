@@ -53,7 +53,7 @@ type SidebarUser = {
 
 const navSections: NavSection[] = [
   {
-    items: [{ label: 'Markdown Workbench', href: '/workbench', active: true, icon: 'workbench' }],
+    items: [{ label: 'Markdown Workbench', href: '/', active: true, icon: 'workbench' }],
   },
   {
     label: 'Converters',

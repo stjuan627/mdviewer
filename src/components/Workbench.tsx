@@ -40,11 +40,10 @@ const editorToolbarIcons = [
 
 export type WorkbenchProps = {
   initialMarkdown: string;
-  source: string | null;
   payloadDropped: boolean;
 };
 
-export function Workbench({ initialMarkdown, source, payloadDropped }: WorkbenchProps) {
+export function Workbench({ initialMarkdown, payloadDropped }: WorkbenchProps) {
   const draftMarkdown = useStore($draftMarkdown);
   const shareState = useStore($shareState);
   const rendered = useStore($rendered);
