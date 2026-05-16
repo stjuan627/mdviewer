@@ -101,19 +101,20 @@ type SidebarContentProps = {
 function SidebarContent({ collapsed, onToggleCollapse, showCollapseButton = true }: SidebarContentProps) {
   return (
     <>
-      <div className="sidebar-top">
-        <a className={cn('brand', collapsed && 'brand-collapsed')} href="/" aria-label="markdown.box home">
-          <span className="brand-mark">M</span>
-          {!collapsed ? (
-            <span className="brand-copy">
-              <strong>markdown.box</strong>
-              <small>tools for writers & builders</small>
-            </span>
-          ) : null}
-        </a>
+      <div className="sidebar-scroll-region">
+        <div className="sidebar-top">
+          <a className={cn('brand', collapsed && 'brand-collapsed')} href="/" aria-label="markdown.box home">
+            <span className="brand-mark">M</span>
+            {!collapsed ? (
+              <span className="brand-copy">
+                <strong>markdown.box</strong>
+                <small>tools for writers & builders</small>
+              </span>
+            ) : null}
+          </a>
 
-        <SidebarNav collapsed={collapsed} />
-
+          <SidebarNav collapsed={collapsed} />
+        </div>
       </div>
 
       <div className="sidebar-footer">

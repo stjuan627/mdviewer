@@ -4,7 +4,6 @@ import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { useStore } from '@nanostores/react';
 import { Check, ChevronDown, Copy, Download, SwatchBook, Trash2, Upload } from 'lucide-react';
-import { WorkbenchSidebar } from '@/components/WorkbenchSidebar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -296,186 +295,180 @@ export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: W
   }
 
   return (
-    <div className="app-container" data-workbench-hydrated={isHydrated ? 'true' : 'false'}>
-      <WorkbenchSidebar />
+    <section className="shell shell-workbench" data-workbench-hydrated={isHydrated ? 'true' : 'false'}>
+      <div className="workbench-stage">
+        <div className="workbench-hero">
+          <div className="workbench-hero-copy">
+            <h1>Markdown Workbench</h1>
+            <p>Write, preview, and perfect your Markdown. Fast, clean, and distraction-free.</p>
+          </div>
 
-      <main className="main-content">
-        <div className="shell shell-workbench">
-          <section className="workbench-stage">
-            <div className="workbench-hero">
-              <div className="workbench-hero-copy">
-                <h1>Markdown Workbench</h1>
-                <p>Write, preview, and perfect your Markdown. Fast, clean, and distraction-free.</p>
-              </div>
+          <div className="workbench-hero-actions" aria-label="Workbench actions">
+            <button
+              type="button"
+              className="hero-action hero-action-share"
+              onClick={handleShare}
+              disabled={shareState.isSharing}
+            >
+              <span>{shareState.isSharing ? 'Sharing...' : 'Share'}</span>
+            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button type="button" className="hero-action hero-action-export" aria-label="Export">
+                  <span>Export</span>
+                  <ChevronDown className="hero-action-caret-icon" aria-hidden="true" size={14} strokeWidth={1.9} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="hero-action-menu">
+                <DropdownMenuItem onClick={handleDownloadHtml}>HTML</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
-              <div className="workbench-hero-actions" aria-label="Workbench actions">
+          <div className="workbench-hero-art" aria-hidden="true">
+            <img src="/workbench-hero-art.svg" alt="" />
+          </div>
+        </div>
+
+        <section className="workbench-surface">
+          <div className="workbench-toolbar">
+            <div className="workbench-toolbar-left">
+              <div className="workbench-editor-actions" aria-label="Editor actions toolbar">
+                <button type="button" className="toolbar-icon-button" aria-label="Clear content" title="Clear content" onClick={handleClear}>
+                  <Trash2 className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
+                </button>
                 <button
                   type="button"
-                  className="hero-action hero-action-share"
-                  onClick={handleShare}
-                  disabled={shareState.isSharing}
+                  className="toolbar-icon-button"
+                  aria-label={copyMarkdownState === 'copied' ? 'Copied' : 'Copy Markdown'}
+                  title={copyMarkdownState === 'copied' ? 'Copied' : 'Copy Markdown'}
+                  onClick={handleCopyMarkdown}
                 >
-                  <span>{shareState.isSharing ? 'Sharing...' : 'Share'}</span>
+                  {copyMarkdownState === 'copied' ? (
+                    <Check className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.9} />
+                  ) : (
+                    <Copy className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
+                  )}
                 </button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button type="button" className="hero-action hero-action-export" aria-label="Export">
-                      <span>Export</span>
-                      <ChevronDown className="hero-action-caret-icon" aria-hidden="true" size={14} strokeWidth={1.9} />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="hero-action-menu">
-                    <DropdownMenuItem onClick={handleDownloadHtml}>HTML</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              <div className="workbench-hero-art" aria-hidden="true">
-                <img src="/workbench-hero-art.svg" alt="" />
+                <button
+                  type="button"
+                  className="toolbar-icon-button"
+                  aria-label="Upload Markdown"
+                  title="Upload Markdown"
+                  onClick={handleOpenUpload}
+                >
+                  <Upload className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
+                </button>
+                <input
+                  ref={uploadInputRef}
+                  type="file"
+                  accept=".md,.markdown,.txt,text/markdown,text/plain"
+                  className="toolbar-file-input"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  onChange={handleUploadMarkdown}
+                />
               </div>
             </div>
 
-            <section className="workbench-surface">
-              <div className="workbench-toolbar">
-                <div className="workbench-toolbar-left">
-                  <div className="workbench-editor-actions" aria-label="Editor actions toolbar">
-                    <button type="button" className="toolbar-icon-button" aria-label="Clear content" title="Clear content" onClick={handleClear}>
-                      <Trash2 className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
-                    </button>
-                    <button
-                      type="button"
-                      className="toolbar-icon-button"
-                      aria-label={copyMarkdownState === 'copied' ? 'Copied' : 'Copy Markdown'}
-                      title={copyMarkdownState === 'copied' ? 'Copied' : 'Copy Markdown'}
-                      onClick={handleCopyMarkdown}
-                    >
-                      {copyMarkdownState === 'copied' ? (
-                        <Check className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.9} />
-                      ) : (
-                        <Copy className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      className="toolbar-icon-button"
-                      aria-label="Upload Markdown"
-                      title="Upload Markdown"
-                      onClick={handleOpenUpload}
-                    >
-                      <Upload className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
-                    </button>
-                    <input
-                      ref={uploadInputRef}
-                      type="file"
-                      accept=".md,.markdown,.txt,text/markdown,text/plain"
-                      className="toolbar-file-input"
-                      tabIndex={-1}
-                      aria-hidden="true"
-                      onChange={handleUploadMarkdown}
-                    />
-                  </div>
-                </div>
-
-                <div className="workbench-toolbar-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild disabled={!isHydrated}>
-                      <button type="button" className="toolbar-theme-trigger" aria-label="Theme selector">
-                        <SwatchBook className="toolbar-theme-icon" aria-hidden="true" size={14} strokeWidth={1.9} />
-                        <span className="toolbar-theme-value">
-                          {themeOptions.find((option) => option.id === themeId)?.label}
+            <div className="workbench-toolbar-right">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!isHydrated}>
+                  <button type="button" className="toolbar-theme-trigger" aria-label="Theme selector">
+                    <SwatchBook className="toolbar-theme-icon" aria-hidden="true" size={14} strokeWidth={1.9} />
+                    <span className="toolbar-theme-value">
+                      {themeOptions.find((option) => option.id === themeId)?.label}
+                    </span>
+                    <ChevronDown className="toolbar-theme-caret" aria-hidden="true" size={14} strokeWidth={1.9} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="toolbar-theme-menu" align="end">
+                  <DropdownMenuLabel>Select Theme</DropdownMenuLabel>
+                  <DropdownMenuRadioGroup value={themeId} onValueChange={(value) => setThemeId(value as ThemeId)}>
+                    {themeOptions.map((option) => (
+                      <DropdownMenuRadioItem key={option.id} value={option.id} className="toolbar-theme-menu-item">
+                        <span className="toolbar-theme-menu-copy">
+                          <span className="toolbar-theme-menu-title">{option.label}</span>
+                          <span className="toolbar-theme-menu-summary">{option.summary}</span>
                         </span>
-                        <ChevronDown className="toolbar-theme-caret" aria-hidden="true" size={14} strokeWidth={1.9} />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="toolbar-theme-menu" align="end">
-                      <DropdownMenuLabel>Select Theme</DropdownMenuLabel>
-                      <DropdownMenuRadioGroup value={themeId} onValueChange={(value) => setThemeId(value as ThemeId)}>
-                        {themeOptions.map((option) => (
-                          <DropdownMenuRadioItem key={option.id} value={option.id} className="toolbar-theme-menu-item">
-                            <span className="toolbar-theme-menu-copy">
-                              <span className="toolbar-theme-menu-title">{option.label}</span>
-                              <span className="toolbar-theme-menu-summary">{option.summary}</span>
-                            </span>
-                          </DropdownMenuRadioItem>
-                        ))}
-                      </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <button
-                    type="button"
-                    className="toolbar-icon-button"
-                    data-testid="copy-html"
-                    aria-label={copyHtmlState === 'copied' ? 'Copied HTML' : 'Copy HTML'}
-                    title={copyHtmlState === 'copied' ? 'Copied HTML' : 'Copy HTML'}
-                    onClick={handleCopyHtml}
-                  >
-                    {copyHtmlState === 'copied' ? (
-                      <Check className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.9} />
-                    ) : (
-                      <Copy className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    className="toolbar-icon-button"
-                    data-testid="download-html"
-                    aria-label={downloadHtmlState === 'downloaded' ? 'Downloaded HTML' : 'Download HTML'}
-                    title={downloadHtmlState === 'downloaded' ? 'Downloaded HTML' : 'Download HTML'}
-                    onClick={handleDownloadHtml}
-                  >
-                    {downloadHtmlState === 'downloaded' ? (
-                      <Check className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.9} />
-                    ) : (
-                      <Download className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
-                    )}
-                  </button>
-                </div>
-              </div>
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <button
+                type="button"
+                className="toolbar-icon-button"
+                data-testid="copy-html"
+                aria-label={copyHtmlState === 'copied' ? 'Copied HTML' : 'Copy HTML'}
+                title={copyHtmlState === 'copied' ? 'Copied HTML' : 'Copy HTML'}
+                onClick={handleCopyHtml}
+              >
+                {copyHtmlState === 'copied' ? (
+                  <Check className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.9} />
+                ) : (
+                  <Copy className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
+                )}
+              </button>
+              <button
+                type="button"
+                className="toolbar-icon-button"
+                data-testid="download-html"
+                aria-label={downloadHtmlState === 'downloaded' ? 'Downloaded HTML' : 'Download HTML'}
+                title={downloadHtmlState === 'downloaded' ? 'Downloaded HTML' : 'Download HTML'}
+                onClick={handleDownloadHtml}
+              >
+                {downloadHtmlState === 'downloaded' ? (
+                  <Check className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.9} />
+                ) : (
+                  <Download className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
+                )}
+              </button>
+            </div>
+          </div>
 
-              <div className="toolbar-notice" data-testid="workbench-notice" role="status">
-                {payloadDropped ? <span>已回落到默认示例</span> : null}
-              </div>
+          <div className="toolbar-notice" data-testid="workbench-notice" role="status">
+            {payloadDropped ? <span>已回落到默认示例</span> : null}
+          </div>
 
-              <div className="workbench-body">
-                <section className="workbench-pane workbench-pane-editor">
-                  <div className="workbench-editor-shell" data-testid="markdown-input" aria-label="Markdown input">
-                    <CodeMirror
-                      value={draftMarkdown}
-                      height="100%"
-                      minHeight="100%"
-                      basicSetup={{
-                        lineNumbers: false,
-                        highlightActiveLineGutter: false,
-                        foldGutter: false,
-                        dropCursor: false,
-                      }}
-                      className="workbench-codemirror"
-                      extensions={extensions}
-                      indentWithTab
-                      placeholder="Write your markdown here..."
-                      theme="light"
-                      onCreateEditor={(editorView) => {
-                        editorScrollRef.current = editorView.scrollDOM;
-                      }}
-                      onChange={updateDraftMarkdown}
-                    />
-                  </div>
-                </section>
-
-                <section className="workbench-pane workbench-pane-preview">
-                  <div
-                    ref={previewScrollRef}
-                    className="preview-frame prose"
-                    data-theme={themeId}
-                    data-testid="preview-frame"
-                    dangerouslySetInnerHTML={{ __html: previewHtml }}
-                  />
-                </section>
+          <div className="workbench-body">
+            <section className="workbench-pane workbench-pane-editor">
+              <div className="workbench-editor-shell" data-testid="markdown-input" aria-label="Markdown input">
+                <CodeMirror
+                  value={draftMarkdown}
+                  height="100%"
+                  minHeight="100%"
+                  basicSetup={{
+                    lineNumbers: false,
+                    highlightActiveLineGutter: false,
+                    foldGutter: false,
+                    dropCursor: false,
+                  }}
+                  className="workbench-codemirror"
+                  extensions={extensions}
+                  indentWithTab
+                  placeholder="Write your markdown here..."
+                  theme="light"
+                  onCreateEditor={(editorView) => {
+                    editorScrollRef.current = editorView.scrollDOM;
+                  }}
+                  onChange={updateDraftMarkdown}
+                />
               </div>
             </section>
-          </section>
-        </div>
-      </main>
-    </div>
+
+            <section className="workbench-pane workbench-pane-preview">
+              <div
+                ref={previewScrollRef}
+                className="preview-frame prose"
+                data-theme={themeId}
+                data-testid="preview-frame"
+                dangerouslySetInnerHTML={{ __html: previewHtml }}
+              />
+            </section>
+          </div>
+        </section>
+      </div>
+    </section>
   );
 }

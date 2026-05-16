@@ -124,6 +124,7 @@
 
 html {
   background: var(--bg);
+  min-height: 100%;
 }
 
 body {
@@ -136,6 +137,11 @@ body {
   font-family: var(--font-body);
   font-size: 0.9375rem;
   line-height: 1.6;
+}
+
+.app-shell-body {
+  height: 100dvh;
+  overflow: hidden;
 }
 
 h1,
@@ -300,21 +306,20 @@ button:not([data-slot='button']):disabled {
 
 .app-container {
   display: flex;
-  min-height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 .sidebar {
-  position: sticky;
-  top: 0;
   display: flex;
   width: var(--sidebar-width);
   min-width: var(--sidebar-width);
-  height: 100vh;
+  height: 100dvh;
   flex-direction: column;
-  justify-content: space-between;
   border-right: 1px solid rgba(234, 224, 213, 0.92);
   background: #f9f7f4;
   padding: 22px 14px 18px;
+  overflow: hidden;
   transition:
     width 180ms ease,
     min-width 180ms ease,
@@ -327,10 +332,16 @@ button:not([data-slot='button']):disabled {
   padding-inline: 8px;
 }
 
+.sidebar-scroll-region {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 .sidebar-top {
   display: flex;
   min-height: 0;
-  flex: 1;
   flex-direction: column;
   gap: 24px;
 }
@@ -522,6 +533,7 @@ button:not([data-slot='button']):disabled {
 }
 
 .sidebar-footer {
+  flex-shrink: 0;
   padding: 18px 6px 0;
 }
 
@@ -642,13 +654,15 @@ button:not([data-slot='button']):disabled {
 .main-content {
   min-width: 0;
   flex: 1;
-  min-height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .shell-workbench {
   width: 100%;
   max-width: none;
-  height: 100vh;
+  height: 100dvh;
   padding: 0 24px 24px;
 }
 
@@ -1908,12 +1922,27 @@ button:not([data-slot='button']):disabled {
 }
 
 @media (max-width: 1100px) {
+  .app-shell-body {
+    height: auto;
+    overflow: visible;
+  }
+
+  .app-container {
+    height: auto;
+    overflow: visible;
+  }
+
   .sidebar {
     display: none;
   }
 
   .mobile-sidebar-trigger-wrap {
     display: block;
+  }
+
+  .main-content {
+    height: auto;
+    overflow: visible;
   }
 
   .shell-workbench {

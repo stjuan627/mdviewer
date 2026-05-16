@@ -2,12 +2,14 @@
 import 'katex/dist/katex.min.css';
 import '@/styles/global.css';
 import { ClientRouter } from 'astro:transitions';
+import { WorkbenchSidebar } from '@/components/WorkbenchSidebar';
 
 interface Props {
   title: string;
   description?: string;
   canonicalUrl?: string;
   schema?: Array<Record<string, unknown>>;
+  appShell?: boolean;
 }
 
 const {
@@ -15,6 +17,7 @@ const {
   description = 'Markdown publishing workbench for article and release views.',
   canonicalUrl,
   schema = [],
+  appShell = true,
 } = Astro.props;
 ---
 
@@ -31,7 +34,16 @@ const {
       <script is:inline type="application/ld+json" set:html={JSON.stringify(entry)} />
     ))}
   </head>
-  <body>
-    <slot />
+  <body class:list={[appShell && 'app-shell-body']}>
+    {appShell ? (
+      <div class="app-container">
+        <WorkbenchSidebar client:load />
+        <main class="main-content">
+          <slot />
+        </main>
+      </div>
+    ) : (
+      <slot />
+    )}
   </body>
 </html>
