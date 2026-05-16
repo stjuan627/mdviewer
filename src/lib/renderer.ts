@@ -1,11 +1,39 @@
+import { gemoji } from 'gemoji';
 import { marked } from 'marked';
+import { markedEmoji } from 'marked-emoji';
+import markedFootnote from 'marked-footnote';
+import markedKatex from 'marked-katex-extension';
 import sanitizeHtml from 'sanitize-html';
 import { RENDERER_VERSION } from '@/lib/constants';
+
+const emojiMap = Object.fromEntries(
+  gemoji.flatMap((entry) => entry.names.map((name) => [name, entry.emoji]))
+);
 
 marked.use({
   gfm: true,
   breaks: false,
 });
+
+marked.use(
+  markedKatex({
+    strict: 'ignore',
+    throwOnError: false,
+  })
+);
+
+marked.use(
+  markedEmoji({
+    emojis: emojiMap,
+    renderer: (token) => token.emoji,
+  })
+);
+
+marked.use(
+  markedFootnote({
+    footnoteDivider: true,
+  })
+);
 
 const sanitizeOptions: sanitizeHtml.IOptions = {
   allowedTags: [
@@ -13,6 +41,7 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
     'aside',
     'blockquote',
     'code',
+    'del',
     'div',
     'em',
     'figcaption',
@@ -27,14 +56,43 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
     'header',
     'hr',
     'img',
+    'input',
     'li',
     'main',
+    'math',
     'ol',
     'p',
     'pre',
     'section',
     'span',
     'strong',
+    'sub',
+    'sup',
+    'semantics',
+    'annotation',
+    'annotation-xml',
+    'mrow',
+    'mi',
+    'mn',
+    'mo',
+    'msup',
+    'msub',
+    'msubsup',
+    'mfrac',
+    'msqrt',
+    'mroot',
+    'mspace',
+    'mtext',
+    'mtable',
+    'mtr',
+    'mtd',
+    'munderover',
+    'munder',
+    'mover',
+    'mstyle',
+    'mphantom',
+    'mpadded',
+    'menclose',
     'table',
     'tbody',
     'td',
@@ -46,10 +104,15 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
   ],
   allowedAttributes: {
     a: ['href', 'target', 'rel'],
+    annotation: ['encoding'],
+    'annotation-xml': ['encoding'],
+    input: ['type', 'checked', 'disabled'],
     img: ['src', 'alt', 'title', 'loading'],
     code: ['class'],
     pre: ['class'],
-    '*': ['class'],
+    math: ['xmlns', 'display'],
+    ol: ['start'],
+    '*': ['class', 'aria-hidden', 'style'],
   },
   allowedSchemes: ['http', 'https', 'mailto'],
   allowedSchemesAppliedToAttributes: ['href', 'src'],

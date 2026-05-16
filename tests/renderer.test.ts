@@ -27,6 +27,24 @@ describe('renderer parity', () => {
     expect(preview.html).not.toContain('Markdown Workbench');
     expect(preview.html).not.toContain('Write, preview, and perfect your Markdown.');
   });
+
+  it('renders latex, emoji shortcodes, and footnotes through the same pipeline', () => {
+    const preview = renderResult([
+      'Inline math $E = mc^2$ and emoji :rocket:.[^proof]',
+      '',
+      '$$',
+      '\\int_{0}^{\\infty} e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}',
+      '$$',
+      '',
+      '[^proof]: Footnote content',
+    ].join('\n'));
+
+    expect(preview.html).toContain('class="katex"');
+    expect(preview.html).toContain('🚀');
+    expect(preview.html).not.toContain(':rocket:');
+    expect(preview.html).toContain('class="footnotes"');
+    expect(preview.html).toContain('Footnote content');
+  });
 });
 
 describe('sanitize rules', () => {
@@ -45,6 +63,15 @@ describe('sanitize rules', () => {
     expect(clean).not.toContain('javascript:');
     expect(clean).not.toContain('<svg');
     expect(clean).not.toContain('onerror');
+  });
+
+  it('keeps safe katex and footnote markup intact', () => {
+    const rendered = renderResult('Math $E = mc^2$.[^1]\n\n[^1]: Note');
+
+    expect(rendered.html).toContain('class="katex"');
+    expect(rendered.html).toContain('class="footnotes"');
+    expect(rendered.html).toContain('href="#footnote-1"');
+    expect(rendered.html).toContain('href="#footnote-ref-1"');
   });
 });
 
