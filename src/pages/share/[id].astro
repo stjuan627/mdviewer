@@ -8,13 +8,19 @@ export const prerender = false;
 const id = Astro.params.id ?? '';
 const record = id ? await getShareRecord((env as CloudflareEnv).DB, id) : null;
 const unavailable = !record || record.invalidatedAt;
-const title = unavailable ? 'Share unavailable — markdown.box' : 'Shared preview — markdown.box';
+const canonicalUrl = Astro.site?.toString();
+const title = unavailable ? 'Share unavailable — MD Viewer' : 'Shared preview — MD Viewer';
 const editHref = record
   ? `/?source=share&shareId=${record.id}&theme=${record.themeId}`
   : '/';
 ---
 
-<BaseLayout title={title} description="Public share page generated from the markdown.box workbench." appShell={false}>
+<BaseLayout
+  title={title}
+  description="Public share page generated from the MD Viewer workbench."
+  canonicalUrl={canonicalUrl}
+  appShell={false}
+>
   <main class="share-shell">
     <div class="share-topbar">
       <div>

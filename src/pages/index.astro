@@ -4,8 +4,8 @@ import { WorkbenchBoot } from '@/components/WorkbenchBoot';
 
 export const prerender = false;
 
-const canonicalUrl = 'https://markdown.box/';
-const title = 'Online Markdown Editor with Live Preview, HTML & PDF Export';
+const canonicalUrl = Astro.site?.toString() ?? 'https://mdviewer.net';
+const title = 'MD Viewer - Online Markdown Editor with Live Preview';
 const description =
   'Free online markdown editor with live preview, clean HTML output, PDF export, and shareable links. Write, format, preview, and export Markdown in one workspace.';
 const heroTitle = 'Markdown Live Preview';
@@ -15,14 +15,14 @@ const schema = [
   {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'markdown.box',
+    name: 'MD Viewer',
     url: canonicalUrl,
     description,
   },
   {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'markdown.box',
+    name: 'MD Viewer',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
     url: canonicalUrl,

@@ -24,7 +24,7 @@ import {
 import { cn } from '@/lib/utils';
 
 const DESKTOP_MEDIA_QUERY = '(min-width: 1101px)';
-const DESKTOP_COLLAPSE_STORAGE_KEY = 'markdown-box.sidebar-collapsed';
+const DESKTOP_COLLAPSE_STORAGE_KEY = 'mdviewer.sidebar-collapsed';
 
 type NavIcon = 'html' | 'image' | 'toc' | 'guides' | 'examples' | 'updates' | 'about' | 'roadmap' | 'help';
 
@@ -62,7 +62,7 @@ const navSections: NavSection[] = [
   {
     secondary: true,
     items: [
-      { label: 'About markdown.box', meta: 'About', href: null, icon: 'about' },
+      { label: 'About MD Viewer', meta: 'About', href: null, icon: 'about' },
       { label: 'Roadmap', meta: 'Plan', href: null, icon: 'roadmap' },
       { label: 'Help & Feedback', meta: 'Support', href: null, icon: 'help' },
     ],
@@ -103,11 +103,11 @@ function SidebarContent({ collapsed, onToggleCollapse, showCollapseButton = true
     <>
       <div className="sidebar-scroll-region">
         <div className="sidebar-top">
-          <a className={cn('brand', collapsed && 'brand-collapsed')} href="/" aria-label="markdown.box home">
+          <a className={cn('brand', collapsed && 'brand-collapsed')} href="/" aria-label="MD Viewer home">
             <span className="brand-mark">M</span>
             {!collapsed ? (
               <span className="brand-copy">
-                <strong>markdown.box</strong>
+                <strong>MD Viewer</strong>
                 <small>tools for writers & builders</small>
               </span>
             ) : null}
@@ -275,7 +275,7 @@ export function WorkbenchSidebar() {
               <SheetHeader className="mobile-sidebar-header">
                 <SheetTitle>Navigation</SheetTitle>
                 <SheetDescription className="mobile-sidebar-description">
-                  Open sidebar navigation for markdown.box tools.
+                  Open sidebar navigation for MD Viewer tools.
                 </SheetDescription>
               </SheetHeader>
               <div className="mobile-sidebar-shell">

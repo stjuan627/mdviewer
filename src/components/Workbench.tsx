@@ -269,7 +269,7 @@ export function Workbench({
     const objectUrl = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = objectUrl;
-    link.download = 'markdown-box-export.html';
+    link.download = 'mdviewer-export.html';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

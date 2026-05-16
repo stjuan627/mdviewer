@@ -1,12 +1,12 @@
 export const defaultMarkdown = `# Online Markdown Editor with Live Preview
 
-Markdown Box is a free, full-featured online markdown editor with live preview that turns plain text into clean, shareable HTML right in your browser. Type on the left, watch the rendered output update in real time on the right, then copy sanitized HTML or publish a public share link in one click — no account, no install, no friction.
+MD Viewer is a free, full-featured online markdown editor with live preview that turns plain text into clean, shareable HTML right in your browser. Type on the left, watch the rendered output update in real time on the right, then copy sanitized HTML or publish a public share link in one click — no account, no install, no friction.
 
 Built for writers who want **GFM, LaTeX math, Mermaid diagrams, images, keyboard shortcuts, and multiple rendering themes** in a single lightweight markdown editor online.
 
 ## A markdown editor built for shipping, not just writing
 
-Most online markdown editors stop at preview. Markdown Box treats the preview as the deliverable. Every keystroke runs through the same render pipeline that powers the share page and the copy-to-clipboard button, so what you see is exactly what your readers will see. No template wrappers, no surprise styling, no drift between editor preview and published page.
+Most online markdown editors stop at preview. MD Viewer treats the preview as the deliverable. Every keystroke runs through the same render pipeline that powers the share page and the copy-to-clipboard button, so what you see is exactly what your readers will see. No template wrappers, no surprise styling, no drift between editor preview and published page.
 
 This real-time markdown editor renders as you type, debounced just enough to stay smooth on long documents — even a multi-thousand-word draft with diagrams and equations stays responsive.
 
@@ -146,5 +146,5 @@ The same renderResult function powers the editor preview, the copy-to-clipboard 
 
 Replace this sample with your own markdown. The live preview updates as you type — text, tables, math, diagrams, and images all render in real time. When the draft looks right, copy the HTML or share the link. That is the whole loop — an online markdown editor with live preview, designed to get out of your way.
 
-[Learn more at markdown.box](https://markdown.box)
+[Learn more at mdviewer.net](https://mdviewer.net)
 `;
