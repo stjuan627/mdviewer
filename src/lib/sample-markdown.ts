@@ -34,11 +34,11 @@ Full CommonMark plus the GFM extensions writers actually use every day:
 
 Write inline math like \`$E = mc^2$\` and full display equations with \`$$ ... $$\`. The live preview renders LaTeX via KaTeX, so formulas, matrices, summations, and Greek symbols all appear inside the markdown preview without a separate editor:
 
-\`\`\`latex
+
 $$
 \\int_{0}^{\\infty} e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}
 $$
-\`\`\`
+
 
 Perfect for technical notes, academic writing, machine-learning READMEs, and any markdown to HTML workflow that needs real math instead of screenshotted equations.
 
@@ -59,9 +59,7 @@ No external diagrams.net round-trip, no exported PNGs to manage — diagrams liv
 
 Drop images straight into the editor or use standard markdown syntax:
 
-\`\`\`md
-![Alt text describing the image](https://example.com/screenshot.png)
-\`\`\`
+![Alt text describing the image](https://picsum.photos/600/400)
 
 The preview shows images inline at native resolution, the copied HTML keeps your URLs intact, and the share page serves images responsively for mobile readers. Combined with code, tables, math, and diagrams, you can publish a complete technical article without leaving this markdown editor online.
 
