@@ -37,14 +37,14 @@ export function updateDraftMarkdown(markdown: string) {
 export function commitDraftMarkdown() {
   const currentDraft = $draftMarkdown.get();
   const normalized = normalizeMarkdown(currentDraft);
+  $draftMarkdown.set(normalized);
+  $markdown.set(normalized);
+}
 
-  if (normalized) {
-    $markdown.set(normalized);
-    return;
-  }
-
-  const currentMarkdown = $markdown.get();
-  $draftMarkdown.set(currentMarkdown);
+export function replaceMarkdown(markdown: string) {
+  const normalized = normalizeMarkdown(markdown);
+  $draftMarkdown.set(normalized);
+  $markdown.set(normalized);
 }
 
 export function startShare() {

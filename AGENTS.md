@@ -1,5 +1,6 @@
 ## Architecture Guardrails
 
+- Default product language is English. Unless a task explicitly targets localization or translation, user-facing UI copy, tooltips, labels, empty states, and product text should be written in English by default.
 - Keep a single render pipeline: preview, copied HTML, and share pages must all be derived from `renderResult(markdown)`. Do not introduce separate HTML wrappers or alternate rendering shells for preview/share.
 - Treat in-session navigation and share persistence as separate mechanisms. Long markdown handoff from `/markdown-viewer` to `/workbench` must use `workbench-navigation-store`, not URL query payloads. Share revisit must use `shareId` plus server hydration.
 - Preserve the `draftMarkdown` -> `commitDraftMarkdown()` -> `$markdown` flow. Do not write editor keystrokes directly into the committed render state unless the rendering strategy is intentionally redesigned.

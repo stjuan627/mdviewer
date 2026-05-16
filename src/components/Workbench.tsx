@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { useStore } from '@nanostores/react';
-import { ChevronDown } from 'lucide-react';
+import { Check, ChevronDown, Copy, Trash2, Upload } from 'lucide-react';
 import { WorkbenchSidebar } from '@/components/WorkbenchSidebar';
 import { RENDER_DEBOUNCE_MS } from '@/lib/constants';
 import {
@@ -15,29 +15,17 @@ import {
   completeShare,
   failShare,
   hydrateWorkbench,
+  replaceMarkdown,
   startShare,
   updateDraftMarkdown,
 } from '@/lib/workbench-store';
 import { renderResult } from '@/lib/renderer';
+import { normalizeMarkdown } from '@/lib/schemas';
 import { themeOptions, type ThemeId } from '@/lib/themes';
 
 const topActions = [
   { label: 'Shortcuts', kind: 'icon-command' },
   { label: 'Export', kind: 'button-export' },
-];
-
-const editorToolbarIcons = [
-  'bold',
-  'italic',
-  'strike',
-  'code',
-  'link',
-  'image',
-  'bullets',
-  'numbers',
-  'quote',
-  'snippet',
-  'more',
 ];
 
 export type WorkbenchProps = {
@@ -53,10 +41,13 @@ export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: W
   const rendered = useStore($rendered);
   const [themeId, setThemeId] = useState<ThemeId>(initialThemeId);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [copyMarkdownState, setCopyMarkdownState] = useState<'idle' | 'copied'>('idle');
   const editorScrollRef = useRef<HTMLElement | null>(null);
   const previewScrollRef = useRef<HTMLDivElement | null>(null);
   const syncingPaneRef = useRef<'editor' | 'preview' | null>(null);
   const hydratedInitialMarkdownRef = useRef<string | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement | null>(null);
+  const copyMarkdownResetRef = useRef<number | null>(null);
   const initialRendered = useMemo(() => renderResult(initialMarkdown), [initialMarkdown]);
 
   if (committedMarkdown === initialMarkdown) {
@@ -78,6 +69,14 @@ export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: W
 
   useEffect(() => {
     setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (copyMarkdownResetRef.current !== null) {
+        window.clearTimeout(copyMarkdownResetRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -129,11 +128,78 @@ export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: W
     };
   }, [rendered.html]);
 
-  async function handleCopy() {
+  async function copyTextToClipboard(value: string) {
     try {
-      await navigator.clipboard.writeText(rendered.html);
+      await navigator.clipboard.writeText(value);
+      return true;
     } catch {
-      // Keep the toolbar visually quiet; clipboard failures can be surfaced later.
+      const textarea = document.createElement('textarea');
+      textarea.value = value;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.top = '0';
+      textarea.style.left = '0';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+
+      try {
+        return document.execCommand('copy');
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    }
+  }
+
+  function handleClear() {
+    if (!window.confirm('Clear the current Markdown content?')) {
+      return;
+    }
+
+    replaceMarkdown('');
+  }
+
+  async function handleCopyMarkdown() {
+    const markdownToCopy = normalizeMarkdown(draftMarkdown);
+    const didCopy = await copyTextToClipboard(markdownToCopy);
+
+    if (!didCopy) {
+      return;
+    }
+
+    setCopyMarkdownState('copied');
+
+    if (copyMarkdownResetRef.current !== null) {
+      window.clearTimeout(copyMarkdownResetRef.current);
+    }
+
+    copyMarkdownResetRef.current = window.setTimeout(() => {
+      setCopyMarkdownState('idle');
+      copyMarkdownResetRef.current = null;
+    }, 1500);
+  }
+
+  async function handleCopyHtml() {
+    await copyTextToClipboard(rendered.html);
+  }
+
+  function handleOpenUpload() {
+    uploadInputRef.current?.click();
+  }
+
+  async function handleUploadMarkdown(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      const content = await file.text();
+      replaceMarkdown(content);
+    } finally {
+      event.target.value = '';
     }
   }
 
@@ -229,17 +295,46 @@ export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: W
             <section className="workbench-surface">
               <div className="workbench-toolbar">
                 <div className="workbench-toolbar-left">
-                  <div className="workbench-editor-actions" aria-label="Editor formatting toolbar">
-                    {editorToolbarIcons.map((icon) => (
-                      <button key={icon} type="button" className={`toolbar-icon-button toolbar-icon-${icon}`} aria-label={`${icon} placeholder`}>
-                        <span className="toolbar-glyph" aria-hidden="true" />
-                      </button>
-                    ))}
+                  <div className="workbench-editor-actions" aria-label="Editor actions toolbar">
+                    <button type="button" className="toolbar-icon-button" aria-label="Clear content" title="Clear content" onClick={handleClear}>
+                      <Trash2 className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
+                    </button>
+                    <button
+                      type="button"
+                      className="toolbar-icon-button"
+                      aria-label={copyMarkdownState === 'copied' ? 'Copied' : 'Copy Markdown'}
+                      title={copyMarkdownState === 'copied' ? 'Copied' : 'Copy Markdown'}
+                      onClick={handleCopyMarkdown}
+                    >
+                      {copyMarkdownState === 'copied' ? (
+                        <Check className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.9} />
+                      ) : (
+                        <Copy className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      className="toolbar-icon-button"
+                      aria-label="Upload Markdown"
+                      title="Upload Markdown"
+                      onClick={handleOpenUpload}
+                    >
+                      <Upload className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
+                    </button>
+                    <input
+                      ref={uploadInputRef}
+                      type="file"
+                      accept=".md,.markdown,.txt,text/markdown,text/plain"
+                      className="toolbar-file-input"
+                      tabIndex={-1}
+                      aria-hidden="true"
+                      onChange={handleUploadMarkdown}
+                    />
                   </div>
                 </div>
 
                 <div className="workbench-toolbar-right">
-                  <button type="button" className="button-toolbar button-toolbar-copy" data-testid="copy-html" onClick={handleCopy}>
+                  <button type="button" className="button-toolbar button-toolbar-copy" data-testid="copy-html" onClick={handleCopyHtml}>
                     Copy HTML
                   </button>
                   <button
