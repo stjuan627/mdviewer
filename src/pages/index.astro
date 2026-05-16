@@ -3,8 +3,43 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import { WorkbenchBoot } from '@/components/WorkbenchBoot';
 
 export const prerender = false;
+
+const canonicalUrl = 'https://markdown.box/';
+const title = 'Online Markdown Editor with Live Preview, HTML & PDF Export';
+const description =
+  'Free online markdown editor with live preview, clean HTML output, PDF export, and shareable links. Write, format, preview, and export Markdown in one workspace.';
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'markdown.box',
+    url: canonicalUrl,
+    description,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'markdown.box',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    url: canonicalUrl,
+    description,
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    featureList: [
+      'Online Markdown editor',
+      'Live Markdown preview',
+      'PDF export',
+      'Copy clean HTML output',
+      'Share rendered Markdown pages',
+    ],
+  },
+];
 ---
 
-<BaseLayout title="markdown.box — Markdown publishing workbench" description="Render Markdown into clean HTML, preview it instantly, and share the exact result.">
+<BaseLayout title={title} description={description} canonicalUrl={canonicalUrl} schema={schema}>
   <WorkbenchBoot client:load />
 </BaseLayout>

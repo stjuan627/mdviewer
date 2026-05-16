@@ -6,9 +6,16 @@ import { ClientRouter } from 'astro:transitions';
 interface Props {
   title: string;
   description?: string;
+  canonicalUrl?: string;
+  schema?: Array<Record<string, unknown>>;
 }
 
-const { title, description = 'Markdown publishing workbench for article and release views.' } = Astro.props;
+const {
+  title,
+  description = 'Markdown publishing workbench for article and release views.',
+  canonicalUrl,
+  schema = [],
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -19,6 +26,10 @@ const { title, description = 'Markdown publishing workbench for article and rele
     <ClientRouter />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {canonicalUrl ? <link rel="canonical" href={canonicalUrl} /> : null}
+    {schema.map((entry) => (
+      <script is:inline type="application/ld+json" set:html={JSON.stringify(entry)} />
+    ))}
   </head>
   <body>
     <slot />
