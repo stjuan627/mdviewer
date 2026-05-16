@@ -1960,6 +1960,7 @@ button:not([data-slot='button']):disabled {
   .shell,
   .shell-workbench {
     width: min(100vw - 24px, 1200px);
+    @apply p-0 pb-10;
   }
 
   .hero-card,
