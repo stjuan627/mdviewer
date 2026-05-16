@@ -32,6 +32,7 @@ const {
     <title>{title}</title>
     <meta name="description" content={description} />
     {canonicalUrl ? <link rel="canonical" href={canonicalUrl} /> : null}
+    <script defer data-domain="mdviewer.net" src="https://app.pageview.app/js/script.js"></script>
     {schema.map((entry) => (
       <script is:inline type="application/ld+json" set:html={JSON.stringify(entry)} />
     ))}
