@@ -3,20 +3,16 @@ import CodeMirror from '@uiw/react-codemirror';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { useStore } from '@nanostores/react';
-import { Check, ChevronDown, Copy, Trash2, Upload } from 'lucide-react';
+import { Check, ChevronDown, Copy, Download, Trash2, Upload } from 'lucide-react';
 import { WorkbenchSidebar } from '@/components/WorkbenchSidebar';
 import { RENDER_DEBOUNCE_MS } from '@/lib/constants';
 import {
   $draftMarkdown,
   $markdown,
   $rendered,
-  $shareState,
   commitDraftMarkdown,
-  completeShare,
-  failShare,
   hydrateWorkbench,
   replaceMarkdown,
-  startShare,
   updateDraftMarkdown,
 } from '@/lib/workbench-store';
 import { renderResult } from '@/lib/renderer';
@@ -37,17 +33,20 @@ export type WorkbenchProps = {
 export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: WorkbenchProps) {
   const draftMarkdown = useStore($draftMarkdown);
   const committedMarkdown = useStore($markdown);
-  const shareState = useStore($shareState);
   const rendered = useStore($rendered);
   const [themeId, setThemeId] = useState<ThemeId>(initialThemeId);
   const [isHydrated, setIsHydrated] = useState(false);
   const [copyMarkdownState, setCopyMarkdownState] = useState<'idle' | 'copied'>('idle');
+  const [copyHtmlState, setCopyHtmlState] = useState<'idle' | 'copied'>('idle');
+  const [downloadHtmlState, setDownloadHtmlState] = useState<'idle' | 'downloaded'>('idle');
   const editorScrollRef = useRef<HTMLElement | null>(null);
   const previewScrollRef = useRef<HTMLDivElement | null>(null);
   const syncingPaneRef = useRef<'editor' | 'preview' | null>(null);
   const hydratedInitialMarkdownRef = useRef<string | null>(null);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const copyMarkdownResetRef = useRef<number | null>(null);
+  const copyHtmlResetRef = useRef<number | null>(null);
+  const downloadHtmlResetRef = useRef<number | null>(null);
   const initialRendered = useMemo(() => renderResult(initialMarkdown), [initialMarkdown]);
 
   if (committedMarkdown === initialMarkdown) {
@@ -75,6 +74,12 @@ export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: W
     return () => {
       if (copyMarkdownResetRef.current !== null) {
         window.clearTimeout(copyMarkdownResetRef.current);
+      }
+      if (copyHtmlResetRef.current !== null) {
+        window.clearTimeout(copyHtmlResetRef.current);
+      }
+      if (downloadHtmlResetRef.current !== null) {
+        window.clearTimeout(downloadHtmlResetRef.current);
       }
     };
   }, []);
@@ -181,7 +186,45 @@ export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: W
   }
 
   async function handleCopyHtml() {
-    await copyTextToClipboard(rendered.html);
+    const didCopy = await copyTextToClipboard(rendered.html);
+
+    if (!didCopy) {
+      return;
+    }
+
+    setCopyHtmlState('copied');
+
+    if (copyHtmlResetRef.current !== null) {
+      window.clearTimeout(copyHtmlResetRef.current);
+    }
+
+    copyHtmlResetRef.current = window.setTimeout(() => {
+      setCopyHtmlState('idle');
+      copyHtmlResetRef.current = null;
+    }, 1500);
+  }
+
+  function handleDownloadHtml() {
+    const blob = new Blob([rendered.html], { type: 'text/html;charset=utf-8' });
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = 'markdown-box-export.html';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(objectUrl);
+
+    setDownloadHtmlState('downloaded');
+
+    if (downloadHtmlResetRef.current !== null) {
+      window.clearTimeout(downloadHtmlResetRef.current);
+    }
+
+    downloadHtmlResetRef.current = window.setTimeout(() => {
+      setDownloadHtmlState('idle');
+      downloadHtmlResetRef.current = null;
+    }, 1500);
   }
 
   function handleOpenUpload() {
@@ -200,41 +243,6 @@ export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: W
       replaceMarkdown(content);
     } finally {
       event.target.value = '';
-    }
-  }
-
-  async function handleShare() {
-    if (shareState.isSharing) {
-      return;
-    }
-
-    startShare();
-
-    try {
-      commitDraftMarkdown();
-      const markdown = $markdown.get();
-
-      const response = await fetch('/api/share', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          markdown,
-          themeId,
-        }),
-      });
-
-      const data: { shareUrl?: string; error?: string } = await response.json();
-
-      if (!response.ok || typeof data.shareUrl !== 'string') {
-        throw new Error(data.error || '创建分享失败，请重试。');
-      }
-
-      completeShare(data.shareUrl);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : '创建分享失败，请重试。';
-      failShare(message);
     }
   }
 
@@ -334,30 +342,39 @@ export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: W
                 </div>
 
                 <div className="workbench-toolbar-right">
-                  <button type="button" className="button-toolbar button-toolbar-copy" data-testid="copy-html" onClick={handleCopyHtml}>
-                    Copy HTML
+                  <button
+                    type="button"
+                    className="toolbar-icon-button"
+                    data-testid="copy-html"
+                    aria-label={copyHtmlState === 'copied' ? 'Copied HTML' : 'Copy HTML'}
+                    title={copyHtmlState === 'copied' ? 'Copied HTML' : 'Copy HTML'}
+                    onClick={handleCopyHtml}
+                  >
+                    {copyHtmlState === 'copied' ? (
+                      <Check className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.9} />
+                    ) : (
+                      <Copy className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
+                    )}
                   </button>
                   <button
                     type="button"
-                    className="button-toolbar button-toolbar-primary"
-                    data-testid="create-share"
-                    disabled={shareState.isSharing}
-                    onClick={handleShare}
+                    className="toolbar-icon-button"
+                    data-testid="download-html"
+                    aria-label={downloadHtmlState === 'downloaded' ? 'Downloaded HTML' : 'Download HTML'}
+                    title={downloadHtmlState === 'downloaded' ? 'Downloaded HTML' : 'Download HTML'}
+                    onClick={handleDownloadHtml}
                   >
-                    {shareState.isSharing ? 'Sharing…' : 'Share'}
+                    {downloadHtmlState === 'downloaded' ? (
+                      <Check className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.9} />
+                    ) : (
+                      <Download className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
+                    )}
                   </button>
-                  {shareState.shareUrl ? (
-                    <a className="button-toolbar" data-testid="open-share" href={shareState.shareUrl} target="_blank" rel="noreferrer">
-                      Open
-                    </a>
-                  ) : null}
                 </div>
               </div>
 
               <div className="toolbar-notice" data-testid="workbench-notice" role="status">
                 {payloadDropped ? <span>已回落到默认示例</span> : null}
-                {shareState.shareUrl ? <span>分享链接已创建</span> : null}
-                {shareState.error ? <span>{shareState.error}</span> : null}
               </div>
 
               <div className="workbench-body">

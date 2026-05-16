@@ -10,8 +10,8 @@ import {
   HelpCircle,
   ImagePlus,
   Info,
-  LayoutDashboard,
   Menu,
+  PenSquare,
   Sparkles,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -53,9 +53,6 @@ type SidebarUser = {
 
 const navSections: NavSection[] = [
   {
-    items: [{ label: 'Markdown Workbench', href: '/', active: true, icon: 'workbench' }],
-  },
-  {
     label: 'Converters',
     items: [
       { label: 'Markdown to HTML', meta: 'Soon', href: null, icon: 'html' },
@@ -90,7 +87,7 @@ const sidebarUser: SidebarUser = {
 function getNavIcon(icon: NavIcon) {
   switch (icon) {
     case 'workbench':
-      return LayoutDashboard;
+      return PenSquare;
     case 'html':
       return FileCode2;
     case 'image':
@@ -109,6 +106,8 @@ function getNavIcon(icon: NavIcon) {
       return ChevronRight;
     case 'help':
       return HelpCircle;
+    default:
+      return PenSquare;
   }
 }
 
@@ -134,16 +133,6 @@ function SidebarContent({ collapsed, onToggleCollapse, showCollapseButton = true
 
         <SidebarNav collapsed={collapsed} />
 
-        {!collapsed ? (
-          <div className="sidebar-promo">
-            <span className="sidebar-promo-icon">✦</span>
-            <strong>More tools, coming soon.</strong>
-            <p>We&apos;re building a growing collection of markdown tools to help you write, convert, and publish with ease.</p>
-            <span className="sidebar-promo-link">
-              See Roadmap <span aria-hidden="true">→</span>
-            </span>
-          </div>
-        ) : null}
       </div>
 
       <div className="sidebar-footer">
