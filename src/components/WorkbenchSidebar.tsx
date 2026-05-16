@@ -3,7 +3,6 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   FileCode2,
   FileImage,
   FileText,
@@ -11,10 +10,8 @@ import {
   ImagePlus,
   Info,
   Menu,
-  PenSquare,
   Sparkles,
 } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -29,7 +26,7 @@ import { cn } from '@/lib/utils';
 const DESKTOP_MEDIA_QUERY = '(min-width: 1101px)';
 const DESKTOP_COLLAPSE_STORAGE_KEY = 'markdown-box.sidebar-collapsed';
 
-type NavIcon = 'workbench' | 'html' | 'image' | 'toc' | 'guides' | 'examples' | 'updates' | 'about' | 'roadmap' | 'help';
+type NavIcon = 'html' | 'image' | 'toc' | 'guides' | 'examples' | 'updates' | 'about' | 'roadmap' | 'help';
 
 type NavItem = {
   label: string;
@@ -43,12 +40,6 @@ type NavSection = {
   label?: string;
   items: NavItem[];
   secondary?: boolean;
-};
-
-type SidebarUser = {
-  name: string;
-  plan: string;
-  initial: string;
 };
 
 const navSections: NavSection[] = [
@@ -78,16 +69,8 @@ const navSections: NavSection[] = [
   },
 ];
 
-const sidebarUser: SidebarUser = {
-  name: 'Writer',
-  plan: 'Free Plan',
-  initial: 'W',
-};
-
 function getNavIcon(icon: NavIcon) {
   switch (icon) {
-    case 'workbench':
-      return PenSquare;
     case 'html':
       return FileCode2;
     case 'image':
@@ -106,8 +89,6 @@ function getNavIcon(icon: NavIcon) {
       return ChevronRight;
     case 'help':
       return HelpCircle;
-    default:
-      return PenSquare;
   }
 }
 
@@ -136,8 +117,6 @@ function SidebarContent({ collapsed, onToggleCollapse, showCollapseButton = true
       </div>
 
       <div className="sidebar-footer">
-        <SidebarProfile collapsed={collapsed} />
-
         {showCollapseButton ? (
           <Button
             type="button"
@@ -209,26 +188,6 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
           </div>
         </div>
       ))}
-    </div>
-  );
-}
-
-function SidebarProfile({ collapsed }: { collapsed: boolean }) {
-  return (
-    <div className={cn('sidebar-profile', collapsed && 'sidebar-profile-collapsed')}>
-      <Avatar className="sidebar-avatar-root">
-        <AvatarFallback className="sidebar-avatar-fallback">{sidebarUser.initial}</AvatarFallback>
-      </Avatar>
-
-      {!collapsed ? (
-        <>
-          <span className="sidebar-profile-copy">
-            <strong>{sidebarUser.name}</strong>
-            <small>{sidebarUser.plan}</small>
-          </span>
-          <ChevronUp className="sidebar-profile-caret-icon" aria-hidden="true" />
-        </>
-      ) : null}
     </div>
   );
 }

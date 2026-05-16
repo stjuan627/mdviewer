@@ -322,9 +322,9 @@ button:not([data-slot='button']):disabled {
 }
 
 .sidebar.is-collapsed {
-  width: 84px;
-  min-width: 84px;
-  padding-inline: 10px;
+  width: 72px;
+  min-width: 72px;
+  padding-inline: 8px;
 }
 
 .sidebar-top {
