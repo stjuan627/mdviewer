@@ -3,26 +3,34 @@ import CodeMirror from '@uiw/react-codemirror';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { useStore } from '@nanostores/react';
-import { Check, ChevronDown, Copy, Download, Trash2, Upload } from 'lucide-react';
+import { Check, ChevronDown, Copy, Download, SwatchBook, Trash2, Upload } from 'lucide-react';
 import { WorkbenchSidebar } from '@/components/WorkbenchSidebar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { RENDER_DEBOUNCE_MS } from '@/lib/constants';
 import {
   $draftMarkdown,
   $markdown,
   $rendered,
+  $shareState,
   commitDraftMarkdown,
+  completeShare,
+  failShare,
   hydrateWorkbench,
   replaceMarkdown,
+  startShare,
   updateDraftMarkdown,
 } from '@/lib/workbench-store';
 import { renderResult } from '@/lib/renderer';
 import { normalizeMarkdown } from '@/lib/schemas';
 import { themeOptions, type ThemeId } from '@/lib/themes';
-
-const topActions = [
-  { label: 'Shortcuts', kind: 'icon-command' },
-  { label: 'Export', kind: 'button-export' },
-];
 
 export type WorkbenchProps = {
   initialMarkdown: string;
@@ -30,10 +38,16 @@ export type WorkbenchProps = {
   initialThemeId: ThemeId;
 };
 
+type ShareResponsePayload = {
+  shareUrl?: string;
+  error?: string;
+};
+
 export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: WorkbenchProps) {
   const draftMarkdown = useStore($draftMarkdown);
   const committedMarkdown = useStore($markdown);
   const rendered = useStore($rendered);
+  const shareState = useStore($shareState);
   const [themeId, setThemeId] = useState<ThemeId>(initialThemeId);
   const [isHydrated, setIsHydrated] = useState(false);
   const [copyMarkdownState, setCopyMarkdownState] = useState<'idle' | 'copied'>('idle');
@@ -204,6 +218,41 @@ export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: W
     }, 1500);
   }
 
+  async function handleShare() {
+    if (shareState.isSharing) {
+      return;
+    }
+
+    const markdownToShare = normalizeMarkdown(draftMarkdown);
+
+    startShare();
+
+    try {
+      const response = await fetch('/api/share', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          markdown: markdownToShare,
+          themeId,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as ShareResponsePayload | null;
+
+      if (!response.ok || !payload?.shareUrl) {
+        failShare(payload?.error ?? 'Failed to create share link.');
+        return;
+      }
+
+      completeShare(payload.shareUrl);
+      await copyTextToClipboard(payload.shareUrl);
+    } catch {
+      failShare('Failed to create share link.');
+    }
+  }
+
   function handleDownloadHtml() {
     const blob = new Blob([rendered.html], { type: 'text/html;charset=utf-8' });
     const objectUrl = URL.createObjectURL(blob);
@@ -260,39 +309,25 @@ export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: W
               </div>
 
               <div className="workbench-hero-actions" aria-label="Workbench actions">
-                <label className="theme-switcher" aria-label="Theme selector">
-                  <span className="theme-switcher-label">Theme</span>
-                  <div className="theme-switcher-select-wrap">
-                    <select
-                      className="theme-switcher-select"
-                      disabled={!isHydrated}
-                      value={themeId}
-                      onChange={(event) => setThemeId(event.target.value as ThemeId)}
-                    >
-                      {themeOptions.map((option) => (
-                        <option key={option.id} value={option.id}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="theme-switcher-caret" aria-hidden="true" size={16} strokeWidth={1.8} />
-                  </div>
-                  <span className="theme-switcher-summary">
-                    {themeOptions.find((option) => option.id === themeId)?.summary}
-                  </span>
-                </label>
-                {topActions.map((action) =>
-                  action.kind === 'button-export' ? (
-                    <button key={action.label} type="button" className="hero-action hero-action-export">
-                      <span>{action.label}</span>
-                      <span className="hero-action-caret" aria-hidden="true">⌄</span>
+                <button
+                  type="button"
+                  className="hero-action hero-action-share"
+                  onClick={handleShare}
+                  disabled={shareState.isSharing}
+                >
+                  <span>{shareState.isSharing ? 'Sharing...' : 'Share'}</span>
+                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button type="button" className="hero-action hero-action-export" aria-label="Export">
+                      <span>Export</span>
+                      <ChevronDown className="hero-action-caret-icon" aria-hidden="true" size={14} strokeWidth={1.9} />
                     </button>
-                  ) : (
-                    <button key={action.label} type="button" className="hero-action hero-action-icon" aria-label={action.label}>
-                      <span className={`hero-icon ${action.kind}`} aria-hidden="true" />
-                    </button>
-                  )
-                )}
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="hero-action-menu">
+                    <DropdownMenuItem onClick={handleDownloadHtml}>HTML</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               <div className="workbench-hero-art" aria-hidden="true">
@@ -342,6 +377,30 @@ export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: W
                 </div>
 
                 <div className="workbench-toolbar-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild disabled={!isHydrated}>
+                      <button type="button" className="toolbar-theme-trigger" aria-label="Theme selector">
+                        <SwatchBook className="toolbar-theme-icon" aria-hidden="true" size={14} strokeWidth={1.9} />
+                        <span className="toolbar-theme-value">
+                          {themeOptions.find((option) => option.id === themeId)?.label}
+                        </span>
+                        <ChevronDown className="toolbar-theme-caret" aria-hidden="true" size={14} strokeWidth={1.9} />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="toolbar-theme-menu" align="end">
+                      <DropdownMenuLabel>Select Theme</DropdownMenuLabel>
+                      <DropdownMenuRadioGroup value={themeId} onValueChange={(value) => setThemeId(value as ThemeId)}>
+                        {themeOptions.map((option) => (
+                          <DropdownMenuRadioItem key={option.id} value={option.id} className="toolbar-theme-menu-item">
+                            <span className="toolbar-theme-menu-copy">
+                              <span className="toolbar-theme-menu-title">{option.label}</span>
+                              <span className="toolbar-theme-menu-summary">{option.summary}</span>
+                            </span>
+                          </DropdownMenuRadioItem>
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <button
                     type="button"
                     className="toolbar-icon-button"
