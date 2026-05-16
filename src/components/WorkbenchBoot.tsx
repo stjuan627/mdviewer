@@ -7,6 +7,11 @@ import {
   type WorkbenchRouteInit,
 } from '@/lib/workbench-navigation-store';
 
+type WorkbenchBootProps = {
+  title?: string;
+  description?: string;
+};
+
 function readRouteInit() {
   if (typeof window === 'undefined') {
     return getDefaultWorkbenchRouteInit();
@@ -37,7 +42,7 @@ function readInitialWorkbenchInit() {
   } satisfies WorkbenchRouteInit;
 }
 
-export function WorkbenchBoot() {
+export function WorkbenchBoot({ title, description }: WorkbenchBootProps) {
   const [init, setInit] = useState<WorkbenchRouteInit>(() => readInitialWorkbenchInit());
 
   useEffect(() => {
@@ -78,6 +83,8 @@ export function WorkbenchBoot() {
       initialMarkdown={init.markdown}
       payloadDropped={init.payloadDropped}
       initialThemeId={init.themeId}
+      title={title}
+      description={description}
     />
   );
 }

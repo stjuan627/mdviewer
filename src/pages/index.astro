@@ -8,6 +8,9 @@ const canonicalUrl = 'https://markdown.box/';
 const title = 'Online Markdown Editor with Live Preview, HTML & PDF Export';
 const description =
   'Free online markdown editor with live preview, clean HTML output, PDF export, and shareable links. Write, format, preview, and export Markdown in one workspace.';
+const heroTitle = 'Markdown Live Preview';
+const heroDescription =
+  'Preview Markdown live, copy clean HTML, export polished output, and share rendered pages easily.';
 const schema = [
   {
     '@context': 'https://schema.org',
@@ -41,5 +44,5 @@ const schema = [
 ---
 
 <BaseLayout title={title} description={description} canonicalUrl={canonicalUrl} schema={schema}>
-  <WorkbenchBoot client:load />
+  <WorkbenchBoot client:load title={heroTitle} description={heroDescription} />
 </BaseLayout>

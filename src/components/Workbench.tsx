@@ -35,6 +35,8 @@ export type WorkbenchProps = {
   initialMarkdown: string;
   payloadDropped: boolean;
   initialThemeId: ThemeId;
+  title?: string;
+  description?: string;
 };
 
 type ShareResponsePayload = {
@@ -42,7 +44,17 @@ type ShareResponsePayload = {
   error?: string;
 };
 
-export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: WorkbenchProps) {
+const DEFAULT_WORKBENCH_TITLE = 'Markdown Workbench';
+const DEFAULT_WORKBENCH_DESCRIPTION =
+  'Write, preview, and perfect your Markdown. Fast, clean, and distraction-free.';
+
+export function Workbench({
+  initialMarkdown,
+  payloadDropped,
+  initialThemeId,
+  title = DEFAULT_WORKBENCH_TITLE,
+  description = DEFAULT_WORKBENCH_DESCRIPTION,
+}: WorkbenchProps) {
   const draftMarkdown = useStore($draftMarkdown);
   const committedMarkdown = useStore($markdown);
   const rendered = useStore($rendered);
@@ -299,8 +311,8 @@ export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: W
       <div className="workbench-stage">
         <div className="workbench-hero">
           <div className="workbench-hero-copy">
-            <h1>Markdown Workbench</h1>
-            <p>Write, preview, and perfect your Markdown. Fast, clean, and distraction-free.</p>
+            <div className="workbench-hero-title">{title}</div>
+            <p>{description}</p>
           </div>
 
           <div className="workbench-hero-actions" aria-label="Workbench actions">
@@ -325,9 +337,6 @@ export function Workbench({ initialMarkdown, payloadDropped, initialThemeId }: W
             </DropdownMenu>
           </div>
 
-          <div className="workbench-hero-art" aria-hidden="true">
-            <img src="/workbench-hero-art.svg" alt="" />
-          </div>
         </div>
 
         <section className="workbench-surface">
