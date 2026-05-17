@@ -116,3 +116,36 @@ test('latex, gemoji, and footnotes render consistently in preview, copy, and sha
   await expect(shareFrame.locator('.katex')).toHaveCount(2);
   await expect(shareFrame.locator('.footnotes')).toContainText('Footnote content');
 });
+
+test('export menu downloads pdf from the current themed preview', async ({ page }) => {
+  await page.goto('/?theme=nocturne');
+
+  const markdown = [
+    '# PDF export',
+    '',
+    'Launch status :rocket: and preserve the selected theme.',
+    '',
+    '> Export should keep blockquotes readable.',
+    '',
+    '```ts',
+    'console.log("pdf");',
+    '```',
+    '',
+    '| Name | Value |',
+    '| --- | --- |',
+    '| Theme | Nocturne |',
+  ].join('\n');
+
+  await replaceMarkdown(page, markdown);
+  await expect(page.getByTestId('preview-frame')).toHaveAttribute('data-theme', 'nocturne');
+
+  await page.getByRole('button', { name: 'Export' }).click();
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByTestId('download-pdf').click();
+  await expect(page.getByText('Preparing PDF')).toBeVisible();
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toBe('mdviewer-export.pdf');
+  await expect(page.getByTestId('workbench-notice')).not.toContainText('PDF export failed');
+});

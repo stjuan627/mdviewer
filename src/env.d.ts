@@ -7,6 +7,7 @@ declare module 'cloudflare:workers' {
 
 declare global {
   interface CloudflareEnv {
+    BROWSER: Fetcher;
     DB: D1Database;
     ASSETS: Fetcher;
   }

@@ -22,6 +22,7 @@
   "dependencies": {
     "@astrojs/cloudflare": "^13.5.0",
     "@astrojs/react": "^5.0.4",
+    "@cloudflare/puppeteer": "^1.1.0",
     "@codemirror/lang-markdown": "^6.5.0",
     "@codemirror/language-data": "^6.5.2",
     "@nanostores/react": "^1.1.0",
@@ -31,6 +32,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "gemoji": "^8.1.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "katex": "^0.16.46",
     "lucide-react": "^0.511.0",
     "marked": "^16.4.1",

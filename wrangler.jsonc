@@ -15,6 +15,9 @@
   "env": {
     "dev": {
       "name": "markdownbox-dev",
+      "browser": {
+        "binding": "BROWSER"
+      },
       "d1_databases": [
         {
           "binding": "DB",
@@ -26,6 +29,9 @@
     },
     "production": {
       "name": "markdownbox",
+      "browser": {
+        "binding": "BROWSER"
+      },
       "d1_databases": [
         {
           "binding": "DB",
