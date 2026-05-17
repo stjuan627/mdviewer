@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { getLandingPageConfig } from '@/lib/landing-pages';
+import { homeInitialMarkdown } from '@/lib/landing-pages/content/home';
 import { renderResult, sanitizeRenderedHtml } from '@/lib/renderer';
-import { defaultMarkdown } from '@/lib/sample-markdown';
 import { parseWorkbenchSearchParams } from '@/lib/schemas';
 import { buildShareRecord } from '@/lib/share';
 
 describe('renderer parity', () => {
   it('keeps preview html equal to snapshotHtml', () => {
-    const preview = renderResult(defaultMarkdown);
+    const preview = renderResult(homeInitialMarkdown);
     const share = buildShareRecord({
       id: 'share-1',
-      markdown: defaultMarkdown,
+      markdown: homeInitialMarkdown,
       themeId: 'paper',
       createdAt: '2026-05-11T00:00:00.000Z',
     });
@@ -20,7 +20,7 @@ describe('renderer parity', () => {
   });
 
   it('renders only the markdown HTML without injected shell content', () => {
-    const preview = renderResult(defaultMarkdown);
+    const preview = renderResult(homeInitialMarkdown);
     const matches = preview.html.match(/<h1\b/g) ?? [];
 
     expect(matches).toHaveLength(1);
@@ -92,7 +92,7 @@ describe('workbench search params', () => {
     const parsed = parseWorkbenchSearchParams(params);
 
     expect(parsed.payloadDropped).toBe(true);
-    expect(parsed.markdown).toBe(defaultMarkdown);
+    expect(parsed.markdown).toBe(homeInitialMarkdown);
   });
 
   it('supports a page-specific fallback markdown sample', () => {

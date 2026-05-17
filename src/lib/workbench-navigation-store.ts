@@ -1,5 +1,5 @@
 import { atom } from 'nanostores';
-import { defaultMarkdown } from '@/lib/sample-markdown';
+import { homeInitialMarkdown } from '@/lib/landing-pages/content/home';
 import { normalizeMarkdown, parseWorkbenchSearchParams } from '@/lib/schemas';
 import { DEFAULT_THEME_ID, type ThemeId } from '@/lib/themes';
 
@@ -35,7 +35,7 @@ export function consumeWorkbenchNavigationPayload() {
 
 export function buildWorkbenchRouteInit(
   searchParams: URLSearchParams,
-  fallbackMarkdown = defaultMarkdown
+  fallbackMarkdown = homeInitialMarkdown
 ): WorkbenchRouteInit {
   const parsed = parseWorkbenchSearchParams(searchParams, fallbackMarkdown);
 
@@ -48,7 +48,7 @@ export function buildWorkbenchRouteInit(
   };
 }
 
-export function getDefaultWorkbenchRouteInit(fallbackMarkdown = defaultMarkdown): WorkbenchRouteInit {
+export function getDefaultWorkbenchRouteInit(fallbackMarkdown = homeInitialMarkdown): WorkbenchRouteInit {
   return {
     markdown: fallbackMarkdown,
     source: null,

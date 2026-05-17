@@ -16,17 +16,15 @@ const canonicalUrl = resolveCanonicalUrl(landing.path, Astro.site);
   canonicalUrl={canonicalUrl}
   schema={landing.schema}
 >
-  <main class="page">
-    <WorkbenchBoot
-      client:load
-      title={landing.heroTitle}
-      description={landing.heroDescription}
-      initialMarkdown={landing.initialMarkdown}
-      variant={landing.workbenchVariant}
-    />
+  <WorkbenchBoot
+    client:load
+    title={landing.heroTitle}
+    description={landing.heroDescription}
+    initialMarkdown={landing.initialMarkdown}
+    variant={landing.workbenchVariant}
+  />
 
-    <div class="shell">
-      <LandingSections sections={landing.sections} />
-    </div>
-  </main>
+  <div class="shell">
+    <LandingSections sections={landing.sections} />
+  </div>
 </BaseLayout>

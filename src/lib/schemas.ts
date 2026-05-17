@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { MAX_MARKDOWN_LENGTH, MAX_URL_PAYLOAD_LENGTH } from '@/lib/constants';
-import { defaultMarkdown } from '@/lib/sample-markdown';
+import { homeInitialMarkdown } from '@/lib/landing-pages/content/home';
 import { DEFAULT_THEME_ID, THEME_IDS } from '@/lib/themes';
 
 export const renderRequestSchema = z.object({
@@ -27,7 +27,7 @@ export function normalizeMarkdown(markdown: string) {
 
 export function parseWorkbenchSearchParams(
   searchParams: URLSearchParams,
-  fallbackMarkdownInput = defaultMarkdown
+  fallbackMarkdownInput = homeInitialMarkdown
 ): WorkbenchInit {
   const rawPayload = searchParams.get('payload');
   const source = searchParams.get('source');
