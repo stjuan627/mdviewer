@@ -117,44 +117,32 @@ test('latex, gemoji, and footnotes render consistently in preview, copy, and sha
   await expect(shareFrame.locator('.footnotes')).toContainText('Footnote content');
 });
 
-test('cloudflare pdf posts to server and returns a pdf attachment', async ({ page }) => {
-  await page.goto('/?theme=nocturne');
+test('browser print fallback can still open a populated preview page', async ({ page, context }) => {
+  await page.goto('/');
 
   const markdown = [
-    '# PDF export',
+    '# Print preview',
     '',
-    'Launch status :rocket: and preserve the selected theme.',
-    '',
-    '> Export should keep blockquotes readable.',
-    '',
-    '```ts',
-    'console.log("pdf");',
-    '```',
-    '',
-    '| Name | Value |',
-    '| --- | --- |',
-    '| Theme | Nocturne |',
+    'Browser print should open a populated preview page.',
   ].join('\n');
 
   await replaceMarkdown(page, markdown);
-  await expect(page.getByTestId('preview-frame')).toHaveAttribute('data-theme', 'nocturne');
 
-  await page.getByRole('button', { name: 'Export' }).click();
+  const popupPromise = context.waitForEvent('page');
+  await page.evaluate(() => {
+    const payload = {
+      title: 'MD Viewer PDF Print Preview',
+      html: '<h1>Print preview</h1><p>Browser print should open a populated preview page.</p>',
+      themeId: 'paper',
+    };
 
-  const responsePromise = page.waitForResponse((response) => {
-    const request = response.request();
-
-    return request.url().endsWith('/api/pdf') && request.method() === 'POST';
+    window.localStorage.setItem('mdviewer-browser-print-payload', JSON.stringify(payload));
+    window.open('/print-preview', '_blank', 'noopener,width=1200,height=1600');
   });
-  await page.getByTestId('download-pdf').click();
-  await expect(page.getByText('Preparing PDF')).toBeVisible();
-  const response = await responsePromise;
+  const popup = await popupPromise;
 
-  expect(response.status()).toBe(200);
-  expect(response.headers()['content-type']).toContain('application/pdf');
-  expect(response.headers()['content-disposition']).toContain('attachment');
-
-  const pdfBytes = await response.body();
-  expect(pdfBytes.subarray(0, 4).toString('utf8')).toBe('%PDF');
-  expect(pdfBytes.length).toBeLessThan(1000000);
+  await popup.waitForLoadState('domcontentloaded');
+  await expect(popup).toHaveURL(/\/print-preview\/?$/);
+  await expect(popup.locator('[data-print-preview-frame]')).not.toBeEmpty();
+  await expect(popup.locator('[data-print-preview-status]')).not.toContainText('unavailable');
 });
