@@ -29,6 +29,7 @@ import {
 } from '@/lib/workbench-store';
 import { renderResult } from '@/lib/renderer';
 import { normalizeMarkdown } from '@/lib/schemas';
+import type { WorkbenchExportOption } from '@/lib/landing-pages';
 import { themeOptions, type ThemeId } from '@/lib/themes';
 
 export type WorkbenchProps = {
@@ -37,6 +38,7 @@ export type WorkbenchProps = {
   initialThemeId: ThemeId;
   title?: string;
   description?: string;
+  exportOptions?: WorkbenchExportOption[];
 };
 
 type ShareResponsePayload = {
@@ -47,6 +49,7 @@ type ShareResponsePayload = {
 const DEFAULT_WORKBENCH_TITLE = 'Markdown Workbench';
 const DEFAULT_WORKBENCH_DESCRIPTION =
   'Write, preview, and perfect your Markdown. Fast, clean, and distraction-free.';
+const DEFAULT_EXPORT_OPTIONS: WorkbenchExportOption[] = ['html', 'pdf'];
 
 export function Workbench({
   initialMarkdown,
@@ -54,6 +57,7 @@ export function Workbench({
   initialThemeId,
   title = DEFAULT_WORKBENCH_TITLE,
   description = DEFAULT_WORKBENCH_DESCRIPTION,
+  exportOptions = DEFAULT_EXPORT_OPTIONS,
 }: WorkbenchProps) {
   const draftMarkdown = useStore($draftMarkdown);
   const committedMarkdown = useStore($markdown);
@@ -369,6 +373,8 @@ export function Workbench({
     }
   }
 
+  const hasExportMenu = exportOptions.length > 0;
+
   return (
     <section className="shell shell-workbench" data-workbench-hydrated={isHydrated ? 'true' : 'false'}>
       <div className="workbench-stage">
@@ -378,26 +384,32 @@ export function Workbench({
             <p>{description}</p>
           </div>
 
-          <div className="workbench-hero-actions" aria-label="Workbench actions">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button type="button" className="hero-action hero-action-export" aria-label="Export">
-                  <span>Export</span>
-                  <ChevronDown className="hero-action-caret-icon" aria-hidden="true" size={14} strokeWidth={1.9} />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="hero-action-menu">
-                <DropdownMenuItem onClick={handleDownloadHtml}>HTML</DropdownMenuItem>
-                <DropdownMenuItem
-                  data-testid="quick-action-pdf"
-                  disabled={quickActionPdfState === 'downloading'}
-                  onClick={handleQuickActionPdf}
-                >
-                  {quickActionPdfState === 'downloading' ? 'PDF (Exporting...)' : 'PDF'}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          {hasExportMenu ? (
+            <div className="workbench-hero-actions" aria-label="Workbench actions">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button type="button" className="hero-action hero-action-export" aria-label="Export">
+                    <span>Export</span>
+                    <ChevronDown className="hero-action-caret-icon" aria-hidden="true" size={14} strokeWidth={1.9} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="hero-action-menu">
+                  {exportOptions.includes('html') ? (
+                    <DropdownMenuItem onClick={handleDownloadHtml}>HTML</DropdownMenuItem>
+                  ) : null}
+                  {exportOptions.includes('pdf') ? (
+                    <DropdownMenuItem
+                      data-testid="quick-action-pdf"
+                      disabled={quickActionPdfState === 'downloading'}
+                      onClick={handleQuickActionPdf}
+                    >
+                      {quickActionPdfState === 'downloading' ? 'PDF (Exporting...)' : 'PDF'}
+                    </DropdownMenuItem>
+                  ) : null}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ) : null}
 
         </div>
 

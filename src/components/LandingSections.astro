@@ -1,0 +1,46 @@
+---
+import type { LandingSection } from '@/lib/landing-pages';
+
+interface Props {
+  sections: LandingSection[];
+}
+
+const { sections } = Astro.props;
+---
+
+{sections.map((section) => (
+  <section class="seo-section" aria-labelledby={`landing-section-${section.id}`}>
+    <div class="section-heading">
+      <span class="section-kicker">{section.kicker}</span>
+      <h2 id={`landing-section-${section.id}`}>{section.title}</h2>
+      <p>{section.description}</p>
+    </div>
+
+    {section.cards ? (
+      <div class:list={['seo-grid', section.columns === 2 && 'seo-grid-two-column']}>
+        {section.cards.map((card) => (
+          <article class="seo-card">
+            <h3>{card.title}</h3>
+            {card.description ? <p>{card.description}</p> : null}
+            <ul class="bullet-list bullet-list-rich">
+              {card.items.map((item) => (
+                <li class="bullet-item-rich">{item}</li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+    ) : null}
+
+    {section.faqItems ? (
+      <div class="seo-card faq-list">
+        {section.faqItems.map((item) => (
+          <div class="faq-item">
+            <strong>{item.question}</strong>
+            <p>{item.answer}</p>
+          </div>
+        ))}
+      </div>
+    ) : null}
+  </section>
+))}

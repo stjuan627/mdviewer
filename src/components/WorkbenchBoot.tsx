@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Workbench } from '@/components/Workbench';
+import type { WorkbenchLandingVariant } from '@/lib/landing-pages';
 import {
   buildWorkbenchRouteInit,
   consumeWorkbenchNavigationPayload,
@@ -10,18 +11,20 @@ import {
 type WorkbenchBootProps = {
   title?: string;
   description?: string;
+  initialMarkdown?: string;
+  variant?: WorkbenchLandingVariant;
 };
 
-function readRouteInit() {
+function readRouteInit(initialMarkdown?: string) {
   if (typeof window === 'undefined') {
-    return getDefaultWorkbenchRouteInit();
+    return getDefaultWorkbenchRouteInit(initialMarkdown);
   }
 
-  return buildWorkbenchRouteInit(new URL(window.location.href).searchParams);
+  return buildWorkbenchRouteInit(new URL(window.location.href).searchParams, initialMarkdown);
 }
 
-function readInitialWorkbenchInit() {
-  const routeInit = readRouteInit();
+function readInitialWorkbenchInit(initialMarkdown?: string) {
+  const routeInit = readRouteInit(initialMarkdown);
 
   if (typeof window === 'undefined') {
     return routeInit;
@@ -42,14 +45,19 @@ function readInitialWorkbenchInit() {
   } satisfies WorkbenchRouteInit;
 }
 
-export function WorkbenchBoot({ title, description }: WorkbenchBootProps) {
-  const [init, setInit] = useState<WorkbenchRouteInit>(() => readInitialWorkbenchInit());
+export function WorkbenchBoot({
+  title,
+  description,
+  initialMarkdown,
+  variant,
+}: WorkbenchBootProps) {
+  const [init, setInit] = useState<WorkbenchRouteInit>(() => readInitialWorkbenchInit(initialMarkdown));
 
   useEffect(() => {
     let cancelled = false;
 
     async function bootstrap() {
-      const routeInit = readRouteInit();
+      const routeInit = readRouteInit(initialMarkdown);
       if (!routeInit.shareId) {
         return;
       }
@@ -76,7 +84,7 @@ export function WorkbenchBoot({ title, description }: WorkbenchBootProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialMarkdown]);
 
   return (
     <Workbench
@@ -85,6 +93,7 @@ export function WorkbenchBoot({ title, description }: WorkbenchBootProps) {
       initialThemeId={init.themeId}
       title={title}
       description={description}
+      exportOptions={variant?.exportOptions}
     />
   );
 }

@@ -47,6 +47,7 @@ Astro 负责页面入口、路由和整体壳层：
 
 - `/`：主工作台 / 产品首页
 - `/markdown-viewer`：轻量 viewer 入口
+- `/markdown-to-pdf`：面向关键词流量的 PDF 导出落地页
 - `/share/[id]`：公开分享页
 - `/api/share`：创建分享
 - `/api/share/[id]`：读取分享对应的 markdown
@@ -64,7 +65,7 @@ React 承担真正的重交互部分，核心入口是：
 职责划分：
 
 - `WorkbenchBoot`：负责根据 URL、客户端暂存状态、shareId 来初始化工作台
-- `Workbench`：负责编辑器、预览、复制 HTML、创建分享、滚动同步等交互
+- `Workbench`：负责编辑器、预览、复制 HTML、创建分享、滚动同步等交互，并允许页面级配置导出主动作
 - `ViewerWorkbenchEntry`：把 viewer 输入的长文本通过客户端状态带入首页工作台
 - `WorkbenchSidebar`：提供工具导航和响应式侧边栏
 
@@ -122,6 +123,20 @@ React 承担真正的重交互部分，核心入口是：
 - share 页展示的也是同一份渲染结果
 - 主题切换只改变外层容器的样式契约，不改变渲染 HTML
 - 不再在结果外层再拼额外的页面模板壳
+
+### 4.5 落地页配置层
+
+文件：`src/lib/landing-pages.ts`
+
+这个配置层负责不同 SEO 页面之间的内容差异，而不改变底层 workbench/render/share 合同：
+
+- 页面 title、description、canonical、schema
+- hero 标题与说明
+- 页面默认示例 markdown
+- 页面级 workbench 变体（例如主导出菜单显示哪些格式）
+- FAQ / benefits / steps 这类落地页附加内容
+
+当前首页 `/`、`/markdown-viewer`、`/markdown-to-pdf` 都从这层读取自己的内容配置。
 
 ### 5. Share 持久化层
 

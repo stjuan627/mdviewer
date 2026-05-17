@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { getLandingPageConfig } from '@/lib/landing-pages';
 import { renderResult, sanitizeRenderedHtml } from '@/lib/renderer';
 import { defaultMarkdown } from '@/lib/sample-markdown';
 import { parseWorkbenchSearchParams } from '@/lib/schemas';
@@ -92,5 +93,14 @@ describe('workbench search params', () => {
 
     expect(parsed.payloadDropped).toBe(true);
     expect(parsed.markdown).toBe(defaultMarkdown);
+  });
+
+  it('supports a page-specific fallback markdown sample', () => {
+    const landing = getLandingPageConfig('markdown-to-pdf');
+    const params = new URLSearchParams({ payload: 'x'.repeat(4000) });
+    const parsed = parseWorkbenchSearchParams(params, landing.initialMarkdown);
+
+    expect(parsed.payloadDropped).toBe(true);
+    expect(parsed.markdown).toBe(landing.initialMarkdown);
   });
 });

@@ -1,49 +1,26 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { WorkbenchBoot } from '@/components/WorkbenchBoot';
+import { getLandingPageConfig, resolveCanonicalUrl } from '@/lib/landing-pages';
 
 export const prerender = false;
 
-const canonicalUrl = Astro.site?.toString() ?? 'https://mdviewer.net';
-const title = 'Online Markdown Viewer with Live Preview - MD Viewer';
-const description =
-  'Free online markdown viewer with live preview. Paste any README, RFC, or .md file to render GFM, LaTeX math, and Mermaid diagrams instantly. Copy clean HTML or share a public link.';
-const heroTitle = 'Markdown Viewer with Live Preview';
-const heroDescription =
-  'Paste any markdown and see it rendered instantly — GFM, LaTeX, Mermaid, and code highlighting. Copy clean HTML, export PDF, or share a public link.';
-const schema = [
-  {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: 'MD Viewer',
-    url: canonicalUrl,
-    description,
-  },
-  {
-    '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
-    name: 'MD Viewer',
-    applicationCategory: 'BusinessApplication',
-    operatingSystem: 'Web',
-    url: canonicalUrl,
-    description,
-    offers: {
-      '@type': 'Offer',
-      price: '0',
-      priceCurrency: 'USD',
-    },
-    featureList: [
-      'Online Markdown viewer',
-      'Live Markdown preview',
-      'GFM, LaTeX, and Mermaid rendering',
-      'PDF export',
-      'Copy clean HTML output',
-      'Share rendered Markdown pages',
-    ],
-  },
-];
+const landing = getLandingPageConfig('home');
+
+const canonicalUrl = resolveCanonicalUrl(landing.path, Astro.site);
 ---
 
-<BaseLayout title={title} description={description} canonicalUrl={canonicalUrl} schema={schema}>
-  <WorkbenchBoot client:load title={heroTitle} description={heroDescription} />
+<BaseLayout
+  title={landing.title}
+  description={landing.description}
+  canonicalUrl={canonicalUrl}
+  schema={landing.schema}
+>
+  <WorkbenchBoot
+    client:load
+    title={landing.heroTitle}
+    description={landing.heroDescription}
+    initialMarkdown={landing.initialMarkdown}
+    variant={landing.workbenchVariant}
+  />
 </BaseLayout>

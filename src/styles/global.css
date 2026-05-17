@@ -1610,6 +1610,10 @@ button:not([data-slot='button']):disabled {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.seo-grid-two-column {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .seo-card,
 .list-card {
   padding: 24px;
@@ -2129,6 +2133,11 @@ button:not([data-slot='button']):disabled {
   .list-card,
   .seo-section {
     padding: 18px;
+  }
+
+  .seo-grid,
+  .seo-grid-two-column {
+    grid-template-columns: 1fr;
   }
 
   .panel-header,

@@ -33,8 +33,11 @@ export function consumeWorkbenchNavigationPayload() {
   return payload;
 }
 
-export function buildWorkbenchRouteInit(searchParams: URLSearchParams): WorkbenchRouteInit {
-  const parsed = parseWorkbenchSearchParams(searchParams);
+export function buildWorkbenchRouteInit(
+  searchParams: URLSearchParams,
+  fallbackMarkdown = defaultMarkdown
+): WorkbenchRouteInit {
+  const parsed = parseWorkbenchSearchParams(searchParams, fallbackMarkdown);
 
   return {
     markdown: parsed.markdown,
@@ -45,9 +48,9 @@ export function buildWorkbenchRouteInit(searchParams: URLSearchParams): Workbenc
   };
 }
 
-export function getDefaultWorkbenchRouteInit(): WorkbenchRouteInit {
+export function getDefaultWorkbenchRouteInit(fallbackMarkdown = defaultMarkdown): WorkbenchRouteInit {
   return {
-    markdown: defaultMarkdown,
+    markdown: fallbackMarkdown,
     source: null,
     payloadDropped: false,
     shareId: null,

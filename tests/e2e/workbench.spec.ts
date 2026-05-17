@@ -55,6 +55,21 @@ test('home raw source already contains server-rendered preview html', async ({ r
   expect(html).toContain('<h2>Why choose a browser-based markdown editor</h2>');
 });
 
+test('markdown-to-pdf route exposes pdf-only primary export intent', async ({ page, request }) => {
+  const response = await request.get('/markdown-to-pdf');
+  const html = await response.text();
+
+  expect(html).toContain('Convert Markdown to PDF in one browser tab');
+  expect(html).toContain('Questions about markdown to PDF exports');
+  expect(html).toContain('data-testid="preview-frame"');
+
+  await page.goto('/markdown-to-pdf');
+  await page.getByRole('button', { name: 'Export' }).click();
+
+  await expect(page.getByRole('menuitem', { name: 'PDF' })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'HTML' })).toHaveCount(0);
+});
+
 test('payload overflow falls back to default example', async ({ page }) => {
   const payload = 'x'.repeat(4000);
   await page.goto(`/?payload=${payload}`);

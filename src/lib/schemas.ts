@@ -25,14 +25,17 @@ export function normalizeMarkdown(markdown: string) {
   return markdown.replace(/\r\n/g, '\n').trim();
 }
 
-export function parseWorkbenchSearchParams(searchParams: URLSearchParams): WorkbenchInit {
+export function parseWorkbenchSearchParams(
+  searchParams: URLSearchParams,
+  fallbackMarkdownInput = defaultMarkdown
+): WorkbenchInit {
   const rawPayload = searchParams.get('payload');
   const source = searchParams.get('source');
   const shareId = searchParams.get('shareId');
   const rawThemeId = searchParams.get('theme');
   const parsedThemeId = themeIdSchema.safeParse(rawThemeId);
   const themeId = parsedThemeId.success ? parsedThemeId.data : DEFAULT_THEME_ID;
-  const fallbackMarkdown = defaultMarkdown;
+  const fallbackMarkdown = fallbackMarkdownInput;
 
   if (!rawPayload) {
     return {
