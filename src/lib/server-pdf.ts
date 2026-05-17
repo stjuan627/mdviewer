@@ -2,8 +2,6 @@ import katexCss from 'katex/dist/katex.min.css?raw';
 import { renderResult } from '@/lib/renderer';
 import type { ThemeId } from '@/lib/themes';
 
-const BROWSER_RUN_HOURLY_RATE_USD = 0.09;
-
 const pdfDocumentCss = `
   :root {
     color-scheme: light;
@@ -306,10 +304,6 @@ const pdfDocumentCss = `
     --theme-rule: rgba(176, 163, 209, 0.85);
   }
 `;
-
-export function estimateBrowserRunCostUsd(browserMs: number) {
-  return (browserMs / 3_600_000) * BROWSER_RUN_HOURLY_RATE_USD;
-}
 
 export function buildServerPdfDocument(markdown: string, themeId: ThemeId) {
   const rendered = renderResult(markdown);

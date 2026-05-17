@@ -1,0 +1,63 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="MD Viewer Print Preview" description="Printable Markdown preview." appShell={false}>
+  <section class="print-preview-shell">
+    <div class="print-preview-status" data-print-preview-status>Preparing print preview...</div>
+    <article class="print-preview-frame prose" data-print-preview-frame hidden></article>
+  </section>
+
+  <script is:inline>
+    const storageKey = 'mdviewer-browser-print-payload';
+    const statusNode = document.querySelector('[data-print-preview-status]');
+    const frameNode = document.querySelector('[data-print-preview-frame]');
+
+    const setStatus = (message) => {
+      if (statusNode) {
+        statusNode.textContent = message;
+      }
+    };
+
+    const rawPayload = window.localStorage.getItem(storageKey);
+
+    if (!rawPayload || !frameNode) {
+      setStatus('Print preview is unavailable. Return to the workbench and try again.');
+    } else {
+      window.localStorage.removeItem(storageKey);
+
+      try {
+        const payload = JSON.parse(rawPayload);
+        document.title = payload.title || '';
+        frameNode.setAttribute('data-theme', payload.themeId || 'paper');
+        frameNode.innerHTML = payload.html || '';
+        frameNode.hidden = false;
+        setStatus('');
+
+        const openPrintDialog = async () => {
+          if (document.fonts && document.fonts.ready) {
+            await document.fonts.ready;
+          }
+
+          await new Promise((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(resolve));
+          });
+
+          window.print();
+        };
+
+        window.addEventListener('afterprint', () => {
+          window.close();
+        });
+
+        void openPrintDialog().catch((error) => {
+          console.error(error);
+          setStatus('Print dialog could not be opened automatically. Use your browser print command.');
+        });
+      } catch (error) {
+        console.error(error);
+        setStatus('Print preview payload could not be restored.');
+      }
+    }
+  </script>
+</BaseLayout>

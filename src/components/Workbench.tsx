@@ -27,7 +27,6 @@ import {
   startShare,
   updateDraftMarkdown,
 } from '@/lib/workbench-store';
-import { exportElementToPdf } from '@/lib/export-pdf';
 import { renderResult } from '@/lib/renderer';
 import { normalizeMarkdown } from '@/lib/schemas';
 import { themeOptions, type ThemeId } from '@/lib/themes';
@@ -49,16 +48,6 @@ const DEFAULT_WORKBENCH_TITLE = 'Markdown Workbench';
 const DEFAULT_WORKBENCH_DESCRIPTION =
   'Write, preview, and perfect your Markdown. Fast, clean, and distraction-free.';
 
-function waitForNextPaint() {
-  return new Promise<void>((resolve) => {
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
-        resolve();
-      });
-    });
-  });
-}
-
 export function Workbench({
   initialMarkdown,
   payloadDropped,
@@ -75,18 +64,17 @@ export function Workbench({
   const [copyMarkdownState, setCopyMarkdownState] = useState<'idle' | 'copied'>('idle');
   const [copyHtmlState, setCopyHtmlState] = useState<'idle' | 'copied'>('idle');
   const [downloadHtmlState, setDownloadHtmlState] = useState<'idle' | 'downloaded'>('idle');
-  const [downloadPdfState, setDownloadPdfState] = useState<'idle' | 'downloading' | 'downloaded' | 'error'>('idle');
+  const [quickActionPdfState, setQuickActionPdfState] = useState<'idle' | 'downloading' | 'downloaded' | 'error'>('idle');
   const [toolbarNotice, setToolbarNotice] = useState<string | null>(null);
   const editorScrollRef = useRef<HTMLElement | null>(null);
   const previewScrollRef = useRef<HTMLDivElement | null>(null);
-  const pdfExportRef = useRef<HTMLDivElement | null>(null);
   const syncingPaneRef = useRef<'editor' | 'preview' | null>(null);
   const hydratedInitialMarkdownRef = useRef<string | null>(null);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const copyMarkdownResetRef = useRef<number | null>(null);
   const copyHtmlResetRef = useRef<number | null>(null);
   const downloadHtmlResetRef = useRef<number | null>(null);
-  const downloadPdfResetRef = useRef<number | null>(null);
+  const quickActionPdfResetRef = useRef<number | null>(null);
   const initialRendered = useMemo(() => renderResult(initialMarkdown), [initialMarkdown]);
 
   if (committedMarkdown === initialMarkdown) {
@@ -121,8 +109,8 @@ export function Workbench({
       if (downloadHtmlResetRef.current !== null) {
         window.clearTimeout(downloadHtmlResetRef.current);
       }
-      if (downloadPdfResetRef.current !== null) {
-        window.clearTimeout(downloadPdfResetRef.current);
+      if (quickActionPdfResetRef.current !== null) {
+        window.clearTimeout(quickActionPdfResetRef.current);
       }
     };
   }, []);
@@ -305,41 +293,59 @@ export function Workbench({
     }, 1500);
   }
 
-  async function handleDownloadPdf() {
-    if (downloadPdfState === 'downloading') {
+  function submitPdfExportForm(action: string) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = action;
+    form.style.display = 'none';
+
+    const markdownInput = document.createElement('input');
+    markdownInput.type = 'hidden';
+    markdownInput.name = 'markdown';
+    markdownInput.value = normalizeMarkdown(committedMarkdown);
+
+    const themeInput = document.createElement('input');
+    themeInput.type = 'hidden';
+    themeInput.name = 'themeId';
+    themeInput.value = themeId;
+
+    form.appendChild(markdownInput);
+    form.appendChild(themeInput);
+    document.body.appendChild(form);
+
+    form.submit();
+    window.setTimeout(() => {
+      document.body.removeChild(form);
+    }, 1000);
+  }
+
+  async function handleQuickActionPdf() {
+    if (quickActionPdfState === 'downloading') {
       return;
     }
 
-    const exportElement = pdfExportRef.current;
-
-    if (!exportElement) {
-      setDownloadPdfState('error');
-      setToolbarNotice('PDF export is unavailable right now.');
-      return;
+    if (quickActionPdfResetRef.current !== null) {
+      window.clearTimeout(quickActionPdfResetRef.current);
+      quickActionPdfResetRef.current = null;
     }
 
-    if (downloadPdfResetRef.current !== null) {
-      window.clearTimeout(downloadPdfResetRef.current);
-      downloadPdfResetRef.current = null;
-    }
-
-    setDownloadPdfState('downloading');
+    setQuickActionPdfState('downloading');
     setToolbarNotice('Preparing your PDF...');
 
     try {
-      await waitForNextPaint();
-      await exportElementToPdf(exportElement);
-      setDownloadPdfState('downloaded');
-      setToolbarNotice('PDF downloaded.');
+      submitPdfExportForm('/api/pdf-quick');
+
+      setQuickActionPdfState('downloaded');
+      setToolbarNotice('PDF requested.');
     } catch (error) {
       console.error(error);
-      setDownloadPdfState('error');
-      setToolbarNotice('PDF export failed. Remote images may block capture.');
+      setQuickActionPdfState('error');
+      setToolbarNotice('PDF export failed.');
     } finally {
-      downloadPdfResetRef.current = window.setTimeout(() => {
-        setDownloadPdfState('idle');
+      quickActionPdfResetRef.current = window.setTimeout(() => {
+        setQuickActionPdfState('idle');
         setToolbarNotice(null);
-        downloadPdfResetRef.current = null;
+        quickActionPdfResetRef.current = null;
       }, 2400);
     }
   }
@@ -381,14 +387,14 @@ export function Workbench({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="hero-action-menu">
-                <DropdownMenuItem
-                  data-testid="download-pdf"
-                  disabled={downloadPdfState === 'downloading'}
-                  onClick={handleDownloadPdf}
-                >
-                  {downloadPdfState === 'downloading' ? 'PDF (Exporting...)' : 'PDF'}
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleDownloadHtml}>HTML</DropdownMenuItem>
+                <DropdownMenuItem
+                  data-testid="quick-action-pdf"
+                  disabled={quickActionPdfState === 'downloading'}
+                  onClick={handleQuickActionPdf}
+                >
+                  {quickActionPdfState === 'downloading' ? 'PDF (Exporting...)' : 'PDF'}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -536,19 +542,7 @@ export function Workbench({
         </section>
       </div>
 
-      <div className="pdf-export-root" aria-hidden="true">
-        <div ref={pdfExportRef} className="pdf-export-sheet">
-          <div className="pdf-export-page">
-            <div
-              className="pdf-export-content prose"
-              data-theme={themeId}
-              dangerouslySetInnerHTML={{ __html: previewHtml }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {downloadPdfState === 'downloading' ? (
+      {quickActionPdfState === 'downloading' ? (
         <div className="pdf-export-overlay" role="status" aria-live="polite" aria-label="Preparing PDF export">
           <div className="pdf-export-overlay-card">
             <div className="pdf-export-overlay-spinner" aria-hidden="true">
@@ -556,7 +550,7 @@ export function Workbench({
             </div>
             <div className="pdf-export-overlay-copy">
               <strong>Preparing PDF</strong>
-              <span>Rendering pages for download...</span>
+              <span>Sending HTML to Cloudflare Quick Actions...</span>
             </div>
           </div>
         </div>

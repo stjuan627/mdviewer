@@ -1461,6 +1461,42 @@ button:not([data-slot='button']):disabled {
   font-size: 0.86rem;
 }
 
+.print-preview-shell {
+  min-height: 100vh;
+  background: #ffffff;
+  padding: 0;
+}
+
+.print-preview-status {
+  margin: 0 auto;
+  width: min(794px, 100%);
+  color: var(--text-secondary);
+  padding: 12px 16px 0;
+  font-size: 0.85rem;
+}
+
+.print-preview-frame {
+  margin: 0 auto;
+  width: min(794px, 100%);
+  background: #ffffff;
+  padding: 12mm;
+}
+
+.print-preview-status:empty {
+  display: none;
+}
+
+@media print {
+  .print-preview-shell {
+    min-height: auto;
+  }
+
+  .print-preview-frame {
+    width: auto;
+    padding: 0;
+  }
+}
+
 @keyframes pdf-export-spin {
   from {
     transform: rotate(0deg);
