@@ -27,7 +27,7 @@ import {
   startShare,
   updateDraftMarkdown,
 } from '@/lib/workbench-store';
-import { exportElementToPdf } from '@/lib/export-pdf';
+import { openBrowserPrintWindow } from '@/lib/browser-print';
 import { renderResult } from '@/lib/renderer';
 import { normalizeMarkdown } from '@/lib/schemas';
 import { themeOptions, type ThemeId } from '@/lib/themes';
@@ -49,16 +49,6 @@ const DEFAULT_WORKBENCH_TITLE = 'Markdown Workbench';
 const DEFAULT_WORKBENCH_DESCRIPTION =
   'Write, preview, and perfect your Markdown. Fast, clean, and distraction-free.';
 
-function waitForNextPaint() {
-  return new Promise<void>((resolve) => {
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
-        resolve();
-      });
-    });
-  });
-}
-
 export function Workbench({
   initialMarkdown,
   payloadDropped,
@@ -74,19 +64,22 @@ export function Workbench({
   const [isHydrated, setIsHydrated] = useState(false);
   const [copyMarkdownState, setCopyMarkdownState] = useState<'idle' | 'copied'>('idle');
   const [copyHtmlState, setCopyHtmlState] = useState<'idle' | 'copied'>('idle');
+  const [browserPrintState, setBrowserPrintState] = useState<'idle' | 'opening' | 'opened' | 'blocked'>('idle');
   const [downloadHtmlState, setDownloadHtmlState] = useState<'idle' | 'downloaded'>('idle');
   const [downloadPdfState, setDownloadPdfState] = useState<'idle' | 'downloading' | 'downloaded' | 'error'>('idle');
+  const [quickActionPdfState, setQuickActionPdfState] = useState<'idle' | 'downloading' | 'downloaded' | 'error'>('idle');
   const [toolbarNotice, setToolbarNotice] = useState<string | null>(null);
   const editorScrollRef = useRef<HTMLElement | null>(null);
   const previewScrollRef = useRef<HTMLDivElement | null>(null);
-  const pdfExportRef = useRef<HTMLDivElement | null>(null);
   const syncingPaneRef = useRef<'editor' | 'preview' | null>(null);
   const hydratedInitialMarkdownRef = useRef<string | null>(null);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const copyMarkdownResetRef = useRef<number | null>(null);
   const copyHtmlResetRef = useRef<number | null>(null);
+  const browserPrintResetRef = useRef<number | null>(null);
   const downloadHtmlResetRef = useRef<number | null>(null);
   const downloadPdfResetRef = useRef<number | null>(null);
+  const quickActionPdfResetRef = useRef<number | null>(null);
   const initialRendered = useMemo(() => renderResult(initialMarkdown), [initialMarkdown]);
 
   if (committedMarkdown === initialMarkdown) {
@@ -118,11 +111,17 @@ export function Workbench({
       if (copyHtmlResetRef.current !== null) {
         window.clearTimeout(copyHtmlResetRef.current);
       }
+      if (browserPrintResetRef.current !== null) {
+        window.clearTimeout(browserPrintResetRef.current);
+      }
       if (downloadHtmlResetRef.current !== null) {
         window.clearTimeout(downloadHtmlResetRef.current);
       }
       if (downloadPdfResetRef.current !== null) {
         window.clearTimeout(downloadPdfResetRef.current);
+      }
+      if (quickActionPdfResetRef.current !== null) {
+        window.clearTimeout(quickActionPdfResetRef.current);
       }
     };
   }, []);
@@ -305,16 +304,68 @@ export function Workbench({
     }, 1500);
   }
 
-  async function handleDownloadPdf() {
-    if (downloadPdfState === 'downloading') {
+  function handleBrowserPrintPdf() {
+    if (browserPrintResetRef.current !== null) {
+      window.clearTimeout(browserPrintResetRef.current);
+      browserPrintResetRef.current = null;
+    }
+
+    setBrowserPrintState('opening');
+    setToolbarNotice('Opening browser print preview...');
+
+    const popup = openBrowserPrintWindow({
+      title: 'MD Viewer PDF Print Preview',
+      html: previewHtml,
+      themeId,
+    });
+
+    if (!popup) {
+      setBrowserPrintState('blocked');
+      setToolbarNotice('Browser popup was blocked.');
+      browserPrintResetRef.current = window.setTimeout(() => {
+        setBrowserPrintState('idle');
+        setToolbarNotice(null);
+        browserPrintResetRef.current = null;
+      }, 2400);
       return;
     }
 
-    const exportElement = pdfExportRef.current;
+    setBrowserPrintState('opened');
+    browserPrintResetRef.current = window.setTimeout(() => {
+      setBrowserPrintState('idle');
+      setToolbarNotice(null);
+      browserPrintResetRef.current = null;
+    }, 2400);
+  }
 
-    if (!exportElement) {
-      setDownloadPdfState('error');
-      setToolbarNotice('PDF export is unavailable right now.');
+  function submitPdfExportForm(action: string) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = action;
+    form.style.display = 'none';
+
+    const markdownInput = document.createElement('input');
+    markdownInput.type = 'hidden';
+    markdownInput.name = 'markdown';
+    markdownInput.value = normalizeMarkdown(committedMarkdown);
+
+    const themeInput = document.createElement('input');
+    themeInput.type = 'hidden';
+    themeInput.name = 'themeId';
+    themeInput.value = themeId;
+
+    form.appendChild(markdownInput);
+    form.appendChild(themeInput);
+    document.body.appendChild(form);
+
+    form.submit();
+    window.setTimeout(() => {
+      document.body.removeChild(form);
+    }, 1000);
+  }
+
+  async function handleDownloadPdf() {
+    if (downloadPdfState === 'downloading') {
       return;
     }
 
@@ -327,19 +378,50 @@ export function Workbench({
     setToolbarNotice('Preparing your PDF...');
 
     try {
-      await waitForNextPaint();
-      await exportElementToPdf(exportElement);
+      submitPdfExportForm('/api/pdf');
+
       setDownloadPdfState('downloaded');
       setToolbarNotice('PDF downloaded.');
     } catch (error) {
       console.error(error);
       setDownloadPdfState('error');
-      setToolbarNotice('PDF export failed. Remote images may block capture.');
+      setToolbarNotice('PDF export failed.');
     } finally {
       downloadPdfResetRef.current = window.setTimeout(() => {
         setDownloadPdfState('idle');
         setToolbarNotice(null);
         downloadPdfResetRef.current = null;
+      }, 2400);
+    }
+  }
+
+  async function handleQuickActionPdf() {
+    if (quickActionPdfState === 'downloading') {
+      return;
+    }
+
+    if (quickActionPdfResetRef.current !== null) {
+      window.clearTimeout(quickActionPdfResetRef.current);
+      quickActionPdfResetRef.current = null;
+    }
+
+    setQuickActionPdfState('downloading');
+    setToolbarNotice('Preparing your Quick Action PDF...');
+
+    try {
+      submitPdfExportForm('/api/pdf-quick');
+
+      setQuickActionPdfState('downloaded');
+      setToolbarNotice('Quick Action PDF requested.');
+    } catch (error) {
+      console.error(error);
+      setQuickActionPdfState('error');
+      setToolbarNotice('Quick Action PDF export failed.');
+    } finally {
+      quickActionPdfResetRef.current = window.setTimeout(() => {
+        setQuickActionPdfState('idle');
+        setToolbarNotice(null);
+        quickActionPdfResetRef.current = null;
       }, 2400);
     }
   }
@@ -382,11 +464,25 @@ export function Workbench({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="hero-action-menu">
                 <DropdownMenuItem
+                  data-testid="browser-print-pdf"
+                  disabled={browserPrintState === 'opening'}
+                  onClick={handleBrowserPrintPdf}
+                >
+                  {browserPrintState === 'opening' ? 'Browser Print PDF (Opening...)' : 'Browser Print PDF'}
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   data-testid="download-pdf"
                   disabled={downloadPdfState === 'downloading'}
                   onClick={handleDownloadPdf}
                 >
-                  {downloadPdfState === 'downloading' ? 'PDF (Exporting...)' : 'PDF'}
+                  {downloadPdfState === 'downloading' ? 'Cloudflare PDF (Exporting...)' : 'Cloudflare PDF'}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  data-testid="quick-action-pdf"
+                  disabled={quickActionPdfState === 'downloading'}
+                  onClick={handleQuickActionPdf}
+                >
+                  {quickActionPdfState === 'downloading' ? 'Quick Action PDF (Exporting...)' : 'Quick Action PDF'}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleDownloadHtml}>HTML</DropdownMenuItem>
               </DropdownMenuContent>
@@ -536,27 +632,19 @@ export function Workbench({
         </section>
       </div>
 
-      <div className="pdf-export-root" aria-hidden="true">
-        <div ref={pdfExportRef} className="pdf-export-sheet">
-          <div className="pdf-export-page">
-            <div
-              className="pdf-export-content prose"
-              data-theme={themeId}
-              dangerouslySetInnerHTML={{ __html: previewHtml }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {downloadPdfState === 'downloading' ? (
+      {downloadPdfState === 'downloading' || quickActionPdfState === 'downloading' ? (
         <div className="pdf-export-overlay" role="status" aria-live="polite" aria-label="Preparing PDF export">
           <div className="pdf-export-overlay-card">
             <div className="pdf-export-overlay-spinner" aria-hidden="true">
               <LoaderCircle className="pdf-export-overlay-spinner-icon" size={18} strokeWidth={2} />
             </div>
             <div className="pdf-export-overlay-copy">
-              <strong>Preparing PDF</strong>
-              <span>Rendering pages for download...</span>
+              <strong>{quickActionPdfState === 'downloading' ? 'Preparing Quick Action PDF' : 'Preparing PDF'}</strong>
+              <span>
+                {quickActionPdfState === 'downloading'
+                  ? 'Sending HTML to Cloudflare Quick Actions...'
+                  : 'Rendering pages for download...'}
+              </span>
             </div>
           </div>
         </div>

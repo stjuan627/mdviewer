@@ -117,7 +117,7 @@ test('latex, gemoji, and footnotes render consistently in preview, copy, and sha
   await expect(shareFrame.locator('.footnotes')).toContainText('Footnote content');
 });
 
-test('export menu downloads pdf from the current themed preview', async ({ page }) => {
+test('cloudflare pdf posts to server and returns a pdf attachment', async ({ page }) => {
   await page.goto('/?theme=nocturne');
 
   const markdown = [
@@ -141,11 +141,20 @@ test('export menu downloads pdf from the current themed preview', async ({ page 
 
   await page.getByRole('button', { name: 'Export' }).click();
 
-  const downloadPromise = page.waitForEvent('download');
+  const responsePromise = page.waitForResponse((response) => {
+    const request = response.request();
+
+    return request.url().endsWith('/api/pdf') && request.method() === 'POST';
+  });
   await page.getByTestId('download-pdf').click();
   await expect(page.getByText('Preparing PDF')).toBeVisible();
-  const download = await downloadPromise;
+  const response = await responsePromise;
 
-  expect(download.suggestedFilename()).toBe('mdviewer-export.pdf');
-  await expect(page.getByTestId('workbench-notice')).not.toContainText('PDF export failed');
+  expect(response.status()).toBe(200);
+  expect(response.headers()['content-type']).toContain('application/pdf');
+  expect(response.headers()['content-disposition']).toContain('attachment');
+
+  const pdfBytes = await response.body();
+  expect(pdfBytes.subarray(0, 4).toString('utf8')).toBe('%PDF');
+  expect(pdfBytes.length).toBeLessThan(1000000);
 });

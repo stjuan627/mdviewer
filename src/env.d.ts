@@ -10,6 +10,8 @@ declare global {
     BROWSER: Fetcher;
     DB: D1Database;
     ASSETS: Fetcher;
+    CF_ACCOUNT_ID?: string;
+    CF_BROWSER_RUN_API_TOKEN?: string;
   }
 }
 
