@@ -5,12 +5,12 @@ import { WorkbenchBoot } from '@/components/WorkbenchBoot';
 export const prerender = false;
 
 const canonicalUrl = Astro.site?.toString() ?? 'https://mdviewer.net';
-const title = 'MD Viewer - Online Markdown Editor with Live Preview';
+const title = 'Online Markdown Viewer with Live Preview - MD Viewer';
 const description =
-  'Free online markdown editor with live preview, clean HTML output, PDF export, and shareable links. Write, format, preview, and export Markdown in one workspace.';
-const heroTitle = 'Markdown Live Preview';
+  'Free online markdown viewer with live preview. Paste any README, RFC, or .md file to render GFM, LaTeX math, and Mermaid diagrams instantly. Copy clean HTML or share a public link.';
+const heroTitle = 'Markdown Viewer with Live Preview';
 const heroDescription =
-  'Preview Markdown live, copy clean HTML, export polished output, and share rendered pages easily.';
+  'Paste any markdown and see it rendered instantly — GFM, LaTeX, Mermaid, and code highlighting. Copy clean HTML, export PDF, or share a public link.';
 const schema = [
   {
     '@context': 'https://schema.org',
@@ -33,8 +33,9 @@ const schema = [
       priceCurrency: 'USD',
     },
     featureList: [
-      'Online Markdown editor',
+      'Online Markdown viewer',
       'Live Markdown preview',
+      'GFM, LaTeX, and Mermaid rendering',
       'PDF export',
       'Copy clean HTML output',
       'Share rendered Markdown pages',
