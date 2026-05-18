@@ -1,4 +1,4 @@
-export const homeInitialMarkdown = `# Online Markdown Viewer with Live Preview
+export const homeInitialMarkdown = `## Online Markdown Viewer with Live Preview
 
 MD Viewer is a free online markdown viewer that renders any markdown into clean, readable HTML in real time. Paste a README, an RFC, a changelog, or any \`.md\` file and see the rendered output instantly — with GFM tables, LaTeX math, Mermaid diagrams, and syntax-highlighted code, all rendered the way GitHub or your favorite docs site would render them.
 

@@ -380,7 +380,7 @@ export function Workbench({
       <div className="workbench-stage">
         <div className="workbench-hero">
           <div className="workbench-hero-copy">
-            <div className="workbench-hero-title">{title}</div>
+            <h1 className="workbench-hero-title">{title}</h1>
             <p>{description}</p>
           </div>
 
