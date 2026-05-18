@@ -46,17 +46,14 @@ type ShareResponsePayload = {
   error?: string;
 };
 
-const DEFAULT_WORKBENCH_TITLE = 'Markdown Workbench';
-const DEFAULT_WORKBENCH_DESCRIPTION =
-  'Write, preview, and perfect your Markdown. Fast, clean, and distraction-free.';
 const DEFAULT_EXPORT_OPTIONS: WorkbenchExportOption[] = ['html', 'pdf'];
 
 export function Workbench({
   initialMarkdown,
   payloadDropped,
   initialThemeId,
-  title = DEFAULT_WORKBENCH_TITLE,
-  description = DEFAULT_WORKBENCH_DESCRIPTION,
+  title,
+  description,
   exportOptions = DEFAULT_EXPORT_OPTIONS,
 }: WorkbenchProps) {
   const draftMarkdown = useStore($draftMarkdown);

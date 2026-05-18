@@ -9,9 +9,8 @@ export const homeLandingPage: LandingPageConfig = {
   title: 'Online Markdown Viewer with Live Preview - MD Viewer',
   description:
     'Free online markdown viewer with live preview. Paste any README, RFC, or .md file to render GFM, LaTeX math, and Mermaid diagrams instantly. Copy clean HTML or share a public link.',
-  heroTitle: 'Markdown Viewer with Live Preview',
-  heroDescription:
-    'Paste any markdown and see it rendered instantly — GFM, LaTeX, Mermaid, and code highlighting. Copy clean HTML, export PDF, or share a public link.',
+  heroTitle: 'Online Markdown Viewer',
+  heroDescription: 'Paste any markdown and see it rendered instantly — GFM, LaTeX, Mermaid, and code highlighting. Copy clean HTML, export PDF, or share a public link.',
   initialMarkdown: homeInitialMarkdown,
   schema: buildSoftwareSchema(
     {

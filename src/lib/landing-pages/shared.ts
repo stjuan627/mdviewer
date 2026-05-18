@@ -1,4 +1,8 @@
-import type { LandingPageConfig, LandingPagePath } from '@/lib/landing-pages/types';
+import type {
+  LandingPageConfig,
+  LandingPagePath,
+  LandingSectionFaqItem,
+} from '@/lib/landing-pages/types';
 
 const canonicalSiteUrl = 'https://mdviewer.net';
 
@@ -38,6 +42,23 @@ export function buildSoftwareSchema(
         priceCurrency: 'USD',
       },
       featureList,
+    },
+  ];
+}
+
+export function buildFaqSchema(faqItems: LandingSectionFaqItem[]) {
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqItems.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: item.answer,
+        },
+      })),
     },
   ];
 }

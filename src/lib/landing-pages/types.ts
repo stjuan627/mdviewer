@@ -35,8 +35,8 @@ export type LandingPageConfig = {
   prerender: boolean;
   title: string;
   description: string;
-  heroTitle: string;
-  heroDescription: string;
+  heroTitle?: string;
+  heroDescription?: string;
   initialMarkdown: string;
   schema: Array<Record<string, unknown>>;
   workbenchVariant: WorkbenchLandingVariant;
