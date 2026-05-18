@@ -29,7 +29,7 @@ export const homeLandingPage: LandingPageConfig = {
     ]
   ),
   workbenchVariant: {
-    exportOptions: ['html', 'pdf'],
+    exportOptions: ['html', 'pdf', 'image'],
   },
   sections: [],
 };

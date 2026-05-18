@@ -34,8 +34,8 @@ test('markdown-to-pdf route exposes pdf-only primary export intent', async ({ pa
   const response = await request.get('/markdown-to-pdf');
   const html = await response.text();
 
-  expect(html).toContain('Convert Markdown to PDF in one browser tab');
-  expect(html).toContain('Questions about markdown to PDF exports');
+  expect(html).toContain('Markdown to PDF Converter');
+  expect(html).toContain('Markdown to PDF — frequently asked questions');
   expect(html).toContain('data-testid="preview-frame"');
 
   await page.goto('/markdown-to-pdf');
@@ -43,6 +43,23 @@ test('markdown-to-pdf route exposes pdf-only primary export intent', async ({ pa
 
   await expect(page.getByRole('menuitem', { name: 'PDF' })).toBeVisible();
   await expect(page.getByRole('menuitem', { name: 'HTML' })).toHaveCount(0);
+  await expect(page.getByRole('menuitem', { name: 'PNG' })).toHaveCount(0);
+});
+
+test('home route exposes PNG export and downloads a PNG file', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Export' }).click();
+
+  await expect(page.getByRole('menuitem', { name: 'HTML' })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'PDF' })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'PNG' })).toBeVisible();
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('menuitem', { name: 'PNG' }).click();
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toBe('mdviewer-export.png');
+  await expect(page.getByTestId('workbench-notice')).toContainText('PNG downloaded.');
 });
 
 test('payload overflow falls back to default example', async ({ page }) => {

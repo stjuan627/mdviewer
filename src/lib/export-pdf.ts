@@ -1,5 +1,6 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { EXPORT_BACKGROUND_COLOR, getExportScale, waitForExportReady } from '@/lib/export-render';
 
 const A4_WIDTH_MM = 210;
 const A4_HEIGHT_MM = 297;
@@ -21,37 +22,6 @@ export function getPdfPageSliceOffsets(totalHeightPx: number, pageHeightPx: numb
   return offsets;
 }
 
-async function waitForImages(root: HTMLElement) {
-  const images = Array.from(root.querySelectorAll('img'));
-
-  await Promise.all(
-    images.map((image) => {
-      if (image.complete) {
-        return Promise.resolve();
-      }
-
-      return new Promise<void>((resolve) => {
-        const cleanup = () => {
-          image.removeEventListener('load', cleanup);
-          image.removeEventListener('error', cleanup);
-          resolve();
-        };
-
-        image.addEventListener('load', cleanup, { once: true });
-        image.addEventListener('error', cleanup, { once: true });
-      });
-    })
-  );
-}
-
-async function waitForFonts() {
-  if (typeof document === 'undefined' || !('fonts' in document)) {
-    return;
-  }
-
-  await document.fonts.ready;
-}
-
 function createPageCanvas(sourceCanvas: HTMLCanvasElement, startY: number, pageHeightPx: number) {
   const pageCanvas = document.createElement('canvas');
   const pageHeight = Math.min(pageHeightPx, sourceCanvas.height - startY);
@@ -65,7 +35,7 @@ function createPageCanvas(sourceCanvas: HTMLCanvasElement, startY: number, pageH
     throw new Error('Failed to create a PDF page canvas.');
   }
 
-  context.fillStyle = '#ffffff';
+  context.fillStyle = EXPORT_BACKGROUND_COLOR;
   context.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
   context.drawImage(
     sourceCanvas,
@@ -83,11 +53,11 @@ function createPageCanvas(sourceCanvas: HTMLCanvasElement, startY: number, pageH
 }
 
 export async function exportElementToPdf(element: HTMLElement, filename = 'mdviewer-export.pdf') {
-  await Promise.all([waitForFonts(), waitForImages(element)]);
+  await waitForExportReady(element);
 
   const canvas = await html2canvas(element, {
-    backgroundColor: '#ffffff',
-    scale: Math.max(2, window.devicePixelRatio || 1),
+    backgroundColor: EXPORT_BACKGROUND_COLOR,
+    scale: getExportScale(),
     useCORS: true,
     allowTaint: false,
     logging: false,

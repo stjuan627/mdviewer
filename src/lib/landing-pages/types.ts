@@ -19,7 +19,7 @@ export type LandingSection = {
   faqItems?: LandingSectionFaqItem[];
 };
 
-export type WorkbenchExportOption = 'html' | 'pdf';
+export type WorkbenchExportOption = 'html' | 'pdf' | 'image';
 
 export type WorkbenchLandingVariant = {
   exportOptions: WorkbenchExportOption[];

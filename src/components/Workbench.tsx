@@ -27,6 +27,7 @@ import {
   startShare,
   updateDraftMarkdown,
 } from '@/lib/workbench-store';
+import { exportElementToImage } from '@/lib/export-image';
 import { renderResult } from '@/lib/renderer';
 import { normalizeMarkdown } from '@/lib/schemas';
 import type { WorkbenchExportOption } from '@/lib/landing-pages';
@@ -46,7 +47,7 @@ type ShareResponsePayload = {
   error?: string;
 };
 
-const DEFAULT_EXPORT_OPTIONS: WorkbenchExportOption[] = ['html', 'pdf'];
+const DEFAULT_EXPORT_OPTIONS: WorkbenchExportOption[] = ['html', 'pdf', 'image'];
 
 export function Workbench({
   initialMarkdown,
@@ -65,6 +66,7 @@ export function Workbench({
   const [copyMarkdownState, setCopyMarkdownState] = useState<'idle' | 'copied'>('idle');
   const [copyHtmlState, setCopyHtmlState] = useState<'idle' | 'copied'>('idle');
   const [downloadHtmlState, setDownloadHtmlState] = useState<'idle' | 'downloaded'>('idle');
+  const [exportImageState, setExportImageState] = useState<'idle' | 'downloading' | 'downloaded' | 'error'>('idle');
   const [quickActionPdfState, setQuickActionPdfState] = useState<'idle' | 'downloading' | 'downloaded' | 'error'>('idle');
   const [toolbarNotice, setToolbarNotice] = useState<string | null>(null);
   const editorScrollRef = useRef<HTMLElement | null>(null);
@@ -75,6 +77,7 @@ export function Workbench({
   const copyMarkdownResetRef = useRef<number | null>(null);
   const copyHtmlResetRef = useRef<number | null>(null);
   const downloadHtmlResetRef = useRef<number | null>(null);
+  const exportImageResetRef = useRef<number | null>(null);
   const quickActionPdfResetRef = useRef<number | null>(null);
   const initialRendered = useMemo(() => renderResult(initialMarkdown), [initialMarkdown]);
 
@@ -109,6 +112,9 @@ export function Workbench({
       }
       if (downloadHtmlResetRef.current !== null) {
         window.clearTimeout(downloadHtmlResetRef.current);
+      }
+      if (exportImageResetRef.current !== null) {
+        window.clearTimeout(exportImageResetRef.current);
       }
       if (quickActionPdfResetRef.current !== null) {
         window.clearTimeout(quickActionPdfResetRef.current);
@@ -351,6 +357,46 @@ export function Workbench({
     }
   }
 
+  async function handleExportImage() {
+    if (exportImageState === 'downloading') {
+      return;
+    }
+
+    if (exportImageResetRef.current !== null) {
+      window.clearTimeout(exportImageResetRef.current);
+      exportImageResetRef.current = null;
+    }
+
+    const previewElement = previewScrollRef.current;
+
+    if (!previewElement) {
+      setExportImageState('error');
+      setToolbarNotice('PNG export failed.');
+      return;
+    }
+
+    setExportImageState('downloading');
+    setToolbarNotice('Preparing PNG...');
+
+    try {
+      const result = await exportElementToImage(previewElement);
+      setExportImageState('downloaded');
+      setToolbarNotice(
+        result.fileCount > 1 ? `PNG exported as ${result.fileCount} files.` : 'PNG downloaded.'
+      );
+    } catch (error) {
+      console.error(error);
+      setExportImageState('error');
+      setToolbarNotice('PNG export failed.');
+    } finally {
+      exportImageResetRef.current = window.setTimeout(() => {
+        setExportImageState('idle');
+        setToolbarNotice(null);
+        exportImageResetRef.current = null;
+      }, 2600);
+    }
+  }
+
   function handleOpenUpload() {
     uploadInputRef.current?.click();
   }
@@ -401,6 +447,15 @@ export function Workbench({
                       onClick={handleQuickActionPdf}
                     >
                       {quickActionPdfState === 'downloading' ? 'PDF (Exporting...)' : 'PDF'}
+                    </DropdownMenuItem>
+                  ) : null}
+                  {exportOptions.includes('image') ? (
+                    <DropdownMenuItem
+                      data-testid="quick-action-image"
+                      disabled={exportImageState === 'downloading'}
+                      onClick={handleExportImage}
+                    >
+                      {exportImageState === 'downloading' ? 'PNG (Exporting...)' : 'PNG'}
                     </DropdownMenuItem>
                   ) : null}
                 </DropdownMenuContent>
