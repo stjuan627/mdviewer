@@ -46,7 +46,6 @@
 Astro 负责页面入口、路由和整体壳层：
 
 - `/`：主工作台 / 产品首页
-- `/markdown-viewer`：轻量 viewer 入口
 - `/markdown-to-pdf`：面向关键词流量的 PDF 导出落地页
 - `/share/[id]`：公开分享页
 - `/api/share`：创建分享
@@ -66,7 +65,6 @@ React 承担真正的重交互部分，核心入口是：
 
 - `WorkbenchBoot`：负责根据 URL、客户端暂存状态、shareId 来初始化工作台
 - `Workbench`：负责编辑器、预览、复制 HTML、创建分享、滚动同步等交互，并允许页面级配置导出主动作
-- `ViewerWorkbenchEntry`：把 viewer 输入的长文本通过客户端状态带入首页工作台
 - `WorkbenchSidebar`：提供工具导航和响应式侧边栏
 
 ### 3. 状态管理层
@@ -97,7 +95,7 @@ React 承担真正的重交互部分，核心入口是：
 
 文件：`src/lib/workbench-navigation-store.ts`
 
-负责同一会话内从 `/markdown-viewer` 跳转到 `/` 时的临时 payload 传递。
+负责同一会话内的临时 payload 传递。
 
 这个 store 的作用是：
 
@@ -136,7 +134,7 @@ React 承担真正的重交互部分，核心入口是：
 - 页面级 workbench 变体（例如主导出菜单显示哪些格式）
 - FAQ / benefits / steps 这类落地页附加内容
 
-当前首页 `/`、`/markdown-viewer`、`/markdown-to-pdf` 都从这层读取自己的内容配置。
+当前首页 `/` 和 `/markdown-to-pdf` 都从这层读取自己的内容配置。
 
 ### 5. Share 持久化层
 
@@ -201,7 +199,6 @@ share record 目前保存：
 ├── src/
 │   ├── components/
 │   │   ├── ui/
-│   │   ├── ViewerWorkbenchEntry.tsx
 │   │   ├── Workbench.tsx
 │   │   ├── WorkbenchBoot.tsx
 │   │   └── WorkbenchSidebar.tsx
@@ -218,7 +215,6 @@ share record 目前保存：
 │   │   └── workbench-store.ts
 │   ├── pages/
 │   │   ├── api/
-│   │   ├── markdown-viewer/
 │   │   ├── share/
 │   │   └── index.astro
 │   └── styles/

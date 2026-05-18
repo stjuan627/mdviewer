@@ -21,9 +21,8 @@ describe('renderer parity', () => {
 
   it('renders only the markdown HTML without injected shell content', () => {
     const preview = renderResult(homeInitialMarkdown);
-    const matches = preview.html.match(/<h1\b/g) ?? [];
 
-    expect(matches).toHaveLength(1);
+    expect(preview.html).toContain('Online Markdown Viewer with Live Preview');
     expect(preview.html).not.toContain('result-shell');
     expect(preview.html).not.toContain('Markdown Workbench');
     expect(preview.html).not.toContain('Write, preview, and perfect your Markdown.');

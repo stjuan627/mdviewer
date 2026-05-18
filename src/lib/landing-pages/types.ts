@@ -25,9 +25,9 @@ export type WorkbenchLandingVariant = {
   exportOptions: WorkbenchExportOption[];
 };
 
-export type LandingPageSlug = 'home' | 'markdown-viewer' | 'markdown-to-pdf';
+export type LandingPageSlug = 'home' | 'markdown-to-pdf';
 
-export type LandingPagePath = '/' | '/markdown-viewer' | '/markdown-to-pdf';
+export type LandingPagePath = '/' | '/markdown-to-pdf';
 
 export type LandingPageConfig = {
   slug: LandingPageSlug;

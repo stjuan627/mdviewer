@@ -7,31 +7,6 @@ async function replaceMarkdown(page: Page, markdown: string) {
   await page.keyboard.insertText(markdown);
 }
 
-test('viewer -> article -> share flow works', async ({ page, context }) => {
-  await page.goto('/markdown-viewer');
-
-  await page.getByRole('button', { name: '进入 Workbench' }).click();
-  await page.waitForURL(/\/\?source=markdown-viewer/);
-  await expect(page.getByTestId('preview-frame')).toBeVisible();
-
-  await expect(page.getByTestId('preview-frame')).toContainText('Online Markdown Editor with Live Preview');
-  await page.locator('.theme-switcher-select').selectOption('nocturne');
-  await expect(page.getByTestId('preview-frame')).toHaveAttribute('data-theme', 'nocturne');
-
-  await page.getByTestId('create-share').click();
-  await expect(page.getByTestId('workbench-notice')).toContainText('分享链接已创建');
-
-  const href = await page.getByTestId('open-share').getAttribute('href');
-  expect(href).toBeTruthy();
-
-  const sharePage = await context.newPage();
-  await sharePage.goto(href!);
-
-  await expect(sharePage.getByTestId('share-frame')).toContainText('Online Markdown Editor with Live Preview');
-  await expect(sharePage.getByTestId('share-frame')).toHaveAttribute('data-theme', 'nocturne');
-  await expect(sharePage.getByRole('link', { name: '返回工作台继续编辑' })).toBeVisible();
-});
-
 test('theme query drives preview theme', async ({ page }) => {
   await page.goto('/?theme=blueprint');
 
