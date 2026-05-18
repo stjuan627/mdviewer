@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 const DESKTOP_MEDIA_QUERY = '(min-width: 1101px)';
 const DESKTOP_COLLAPSE_STORAGE_KEY = 'mdviewer.sidebar-collapsed';
 
-type NavIcon = 'html' | 'image' | 'toc' | 'guides' | 'examples' | 'updates' | 'about' | 'roadmap' | 'help';
+type NavIcon = 'html' | 'pdf' | 'image' | 'toc' | 'guides' | 'examples' | 'updates' | 'about' | 'roadmap' | 'help';
 
 type NavItem = {
   label: string;
@@ -44,27 +44,28 @@ type NavSection = {
 
 const navSections: NavSection[] = [
   {
-    label: 'Converters',
+    label: 'Tools',
     items: [
-      { label: 'Markdown to HTML', meta: 'Soon', href: null, icon: 'html' },
-      { label: 'Markdown to Image', meta: 'Soon', href: null, icon: 'image' },
-      { label: 'TOC Generator', meta: 'Soon', href: null, icon: 'toc' },
+      // { label: 'Markdown to HTML', href: '/markdown-to-html', icon: 'html' },
+      { label: 'Markdown to PDF', href: '/markdown-to-pdf', icon: 'pdf' },
+      // { label: 'Markdown to Image', href: '/markdown-to-image', icon: 'image' },
+      // { label: 'TOC Generator', meta: 'Soon', href: null, icon: 'toc' },
     ],
   },
-  {
-    label: 'Resources',
-    items: [
-      { label: 'Guides', meta: 'Library', href: null, icon: 'guides' },
-      { label: 'Examples', meta: 'Library', href: null, icon: 'examples' },
-      { label: "What's New", meta: 'Updates', href: null, icon: 'updates' },
-    ],
-  },
+  // {
+  //   label: 'Resources',
+  //   items: [
+  //     { label: 'Guides', meta: 'Library', href: null, icon: 'guides' },
+  //     { label: 'Examples', meta: 'Library', href: null, icon: 'examples' },
+  //     { label: "What's New", meta: 'Updates', href: null, icon: 'updates' },
+  //   ],
+  // },
   {
     secondary: true,
     items: [
-      { label: 'About MD Viewer', meta: 'About', href: null, icon: 'about' },
-      { label: 'Roadmap', meta: 'Plan', href: null, icon: 'roadmap' },
-      { label: 'Help & Feedback', meta: 'Support', href: null, icon: 'help' },
+      // { label: 'About MD Viewer', meta: 'About', href: null, icon: 'about' },
+      // { label: 'Roadmap', meta: 'Plan', href: null, icon: 'roadmap' },
+      { label: 'Help & Feedback', href: 'mailto:support@mdviewer.net', icon: 'help' },
     ],
   },
 ];
@@ -73,6 +74,8 @@ function getNavIcon(icon: NavIcon) {
   switch (icon) {
     case 'html':
       return FileCode2;
+    case 'pdf':
+      return FileText;
     case 'image':
       return FileImage;
     case 'toc':
@@ -108,7 +111,6 @@ function SidebarContent({ collapsed, onToggleCollapse, showCollapseButton = true
             {!collapsed ? (
               <span className="brand-copy">
                 <strong>MD Viewer</strong>
-                <small>tools for writers & builders</small>
               </span>
             ) : null}
           </a>
@@ -166,7 +168,7 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
                       <span className="nav-copy nav-copy-single">
                         <span>{item.label}</span>
                       </span>
-                      {item.meta ? <span className={cn('nav-meta', item.active && 'nav-meta-active')}>{item.meta}</span> : null}
+                      {/* {item.meta ? <span className={cn('nav-meta', item.active && 'nav-meta-active')}>{item.meta}</span> : null} */}
                     </>
                   ) : null}
                 </>
