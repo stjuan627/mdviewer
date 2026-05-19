@@ -46,9 +46,9 @@ const navSections: NavSection[] = [
   {
     label: 'Tools',
     items: [
-      // { label: 'Markdown to HTML', href: '/markdown-to-html', icon: 'html' },
+      { label: 'Markdown to HTML', href: '/markdown-to-html', icon: 'html' },
       { label: 'Markdown to PDF', href: '/markdown-to-pdf', icon: 'pdf' },
-      // { label: 'Markdown to Image', href: '/markdown-to-image', icon: 'image' },
+      { label: 'Markdown to Image', href: '/markdown-to-image', icon: 'image' },
       // { label: 'TOC Generator', meta: 'Soon', href: null, icon: 'toc' },
     ],
   },
