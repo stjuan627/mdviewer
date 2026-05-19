@@ -1818,6 +1818,30 @@ button:not([data-slot='button']):disabled {
   padding-left: 1.3rem;
 }
 
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose ul ul {
+  list-style: circle;
+}
+
+.prose ul ul ul {
+  list-style: square;
+}
+
+.prose ol ol {
+  list-style: lower-alpha;
+}
+
+.prose ol ol ol {
+  list-style: lower-roman;
+}
+
 .prose li {
   list-style: inherit;
   color: inherit;
