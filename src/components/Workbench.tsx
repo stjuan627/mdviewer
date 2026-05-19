@@ -340,6 +340,9 @@ export function Workbench({
     setToolbarNotice('Preparing your PDF...');
 
     try {
+      await new Promise<void>((resolve) => {
+        window.requestAnimationFrame(() => resolve());
+      });
       submitPdfExportForm('/api/pdf-quick');
 
       setQuickActionPdfState('downloaded');
@@ -417,6 +420,13 @@ export function Workbench({
   }
 
   const hasExportMenu = exportOptions.length > 0;
+  const isExporting = quickActionPdfState === 'downloading' || exportImageState === 'downloading';
+  const exportButtonLabel =
+    quickActionPdfState === 'downloading'
+      ? 'Exporting PDF'
+      : exportImageState === 'downloading'
+        ? 'Exporting PNG'
+        : 'Export';
 
   return (
     <section className="shell shell-workbench" data-workbench-hydrated={isHydrated ? 'true' : 'false'}>
@@ -431,9 +441,23 @@ export function Workbench({
             <div className="workbench-hero-actions" aria-label="Workbench actions">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button type="button" className="hero-action hero-action-export" aria-label="Export">
-                    <span>Export</span>
-                    <ChevronDown className="hero-action-caret-icon" aria-hidden="true" size={14} strokeWidth={1.9} />
+                  <button
+                    type="button"
+                    className="hero-action hero-action-export"
+                    aria-label={exportButtonLabel}
+                    aria-busy={isExporting}
+                    disabled={isExporting}
+                  >
+                    {isExporting ? (
+                      <LoaderCircle className="hero-action-spinner" aria-hidden="true" size={14} strokeWidth={2} />
+                    ) : null}
+                    <span>{exportButtonLabel}</span>
+                    <ChevronDown
+                      className="hero-action-caret-icon"
+                      aria-hidden="true"
+                      size={14}
+                      strokeWidth={1.9}
+                    />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="hero-action-menu">

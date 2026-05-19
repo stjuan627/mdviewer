@@ -962,6 +962,11 @@ button:not([data-slot='button']):disabled {
   font-weight: 600;
 }
 
+.hero-action-spinner {
+  flex-shrink: 0;
+  animation: hero-action-spin 900ms linear infinite;
+}
+
 .hero-action:hover:not(:disabled) {
   transform: translateY(-1px);
 }
@@ -990,6 +995,16 @@ button:not([data-slot='button']):disabled {
 
 .hero-action-caret-icon {
   flex-shrink: 0;
+}
+
+@keyframes hero-action-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .hero-icon {
