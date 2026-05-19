@@ -16,6 +16,8 @@ Common reasons to export Markdown as a PDF:
 - **Submit homework, theses, or papers** — most academic portals require PDF, not Markdown.
 - **Send a clean handout** — embed code, tables, math, and diagrams in one file with no broken rendering on the recipient's side.
 - **Generate a résumé or cover letter from Markdown source** — keep the writing in plain text, ship the PDF.
+- **Turn a GitHub README into a printable onboarding doc** — preserve GFM tables, task lists, footnotes, and syntax-highlighted code in a paginated file.
+- **Convert meeting notes and agendas to PDF** — give attendees an offline copy with predictable margins and printable page breaks.
 
 ## How the markdown to PDF converter works
 
