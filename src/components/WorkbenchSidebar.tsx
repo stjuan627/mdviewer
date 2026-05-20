@@ -107,7 +107,7 @@ function SidebarContent({ collapsed, onToggleCollapse, showCollapseButton = true
       <div className="sidebar-scroll-region">
         <div className="sidebar-top">
           <a className={cn('brand', collapsed && 'brand-collapsed')} href="/" aria-label="MD Viewer home">
-            <span className="brand-mark">M</span>
+            <img src="/logo-square.svg" alt="MD Viewer logo" className="brand-logo" style={{ width: '30px', height: '30px' }} />
             {!collapsed ? (
               <span className="brand-copy">
                 <strong>MD Viewer</strong>

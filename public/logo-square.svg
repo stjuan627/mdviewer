@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MD Viewer Logo">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#463734" />
+      <stop offset="100%" stop-color="#2C2421" />
+    </linearGradient>
+  </defs>
+  
+  <!-- High contrast dark background -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  
+  <!-- Bold, simple Markdown symbol for small-size legibility -->
+  <g fill="none" stroke="#FCFBF8" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
+    <!-- M -->
+    <path d="M 84 352 V 160 L 164 260 L 244 160 V 352" />
+    
+    <!-- Arrow -->
+    <path d="M 372 160 V 352" />
+    <path d="M 316 296 L 372 352 L 428 296" />
+  </g>
+</svg>
