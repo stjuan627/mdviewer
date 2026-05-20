@@ -51,10 +51,10 @@ design_tokens:
     md: "0 4px 12px rgba(44, 36, 33, 0.04), 0 1px 3px rgba(44, 36, 33, 0.02)"
 ---
 
-# Design System: markdown.box
+# Design System: mdviewer.net
 
 ## 1. Overview
-markdown.box 是一个专为创作者、写作者和开发者设计的在线 Markdown 工作台。
+mdviewer.net 是一个专为创作者、写作者和开发者设计的在线 Markdown 工作台。
 它的视觉核心是**“温暖、专注、无干扰”**（Calm, capable space to write and refine）。
 与传统的极客风格 Markdown 编辑器不同，它采用了类似书籍排版的 Serif 标题字体和温暖的奶油色调（Cream/Beige）背景，结合咖啡杯等生活化插画元素，传递出一种放松、沉浸的写作氛围。
 

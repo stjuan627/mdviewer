@@ -1,6 +1,6 @@
-# markdown.box
+# mdviewer.net
 
-`markdown.box` 是一个以 Markdown 发布为核心的在线工作台。它提供编辑、实时预览、HTML 复制和公开分享能力，目标不是做“另一个 formatter”，而是把 Markdown 从草稿一路带到可发布结果。
+`mdviewer.net` 是一个以 Markdown 发布为核心的在线工作台。它提供编辑、实时预览、HTML 复制和公开分享能力，目标不是做“另一个 formatter”，而是把 Markdown 从草稿一路带到可发布结果。
 
 ## 项目定位
 
