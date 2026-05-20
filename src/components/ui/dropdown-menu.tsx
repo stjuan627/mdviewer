@@ -33,7 +33,7 @@ function DropdownMenuContent({
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
         className={cn(
-          'z-50 min-w-[8rem] overflow-hidden rounded-md border border-[rgba(234,224,213,0.92)] bg-white p-1 text-[color:var(--text-primary)] shadow-md',
+          'z-50 min-w-[8rem] overflow-hidden rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] p-1 text-[color:var(--text-primary)] shadow-md',
           'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
           'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1',
           className
@@ -60,7 +60,7 @@ function DropdownMenuItem({
       data-variant={variant}
       className={cn(
         'relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none',
-        'transition-colors focus:bg-[rgba(240,229,216,0.72)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        'transition-colors focus:bg-[var(--surface-muted)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         'data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10',
         inset && 'pl-8',
         className
@@ -80,7 +80,7 @@ function DropdownMenuCheckboxItem({
     <DropdownMenuPrimitive.CheckboxItem
       data-slot="dropdown-menu-checkbox-item"
       className={cn(
-        'relative flex cursor-default items-start gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none select-none transition-colors focus:bg-[rgba(240,229,216,0.72)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        'relative flex cursor-default items-start gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none select-none transition-colors focus:bg-[var(--surface-muted)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className
       )}
       checked={checked}
@@ -111,7 +111,7 @@ function DropdownMenuRadioItem({
     <DropdownMenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
       className={cn(
-        'relative flex cursor-default items-start gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none select-none transition-colors focus:bg-[rgba(240,229,216,0.72)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        'relative flex cursor-default items-start gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none select-none transition-colors focus:bg-[var(--surface-muted)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className
       )}
       {...props}
@@ -153,7 +153,7 @@ function DropdownMenuSeparator({
   return (
     <DropdownMenuPrimitive.Separator
       data-slot="dropdown-menu-separator"
-      className={cn('-mx-1 my-1 h-px bg-[rgba(234,224,213,0.92)]', className)}
+      className={cn('-mx-1 my-1 h-px bg-[var(--border-subtle)]', className)}
       {...props}
     />
   );
@@ -191,7 +191,7 @@ function DropdownMenuSubTrigger({
       data-slot="dropdown-menu-sub-trigger"
       data-inset={inset}
       className={cn(
-        'flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none focus:bg-[rgba(240,229,216,0.72)]',
+        'flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none focus:bg-[var(--surface-muted)]',
         inset && 'pl-8',
         className
       )}
@@ -211,7 +211,7 @@ function DropdownMenuSubContent({
     <DropdownMenuPrimitive.SubContent
       data-slot="dropdown-menu-sub-content"
       className={cn(
-        'z-50 min-w-[8rem] overflow-hidden rounded-md border border-[rgba(234,224,213,0.92)] bg-white p-1 text-[color:var(--text-primary)] shadow-md',
+        'z-50 min-w-[8rem] overflow-hidden rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] p-1 text-[color:var(--text-primary)] shadow-md',
         'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
         'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
         className

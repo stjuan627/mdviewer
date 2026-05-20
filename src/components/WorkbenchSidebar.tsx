@@ -10,7 +10,9 @@ import {
   ImagePlus,
   Info,
   Menu,
+  Moon,
   Sparkles,
+  Sun,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -97,11 +99,19 @@ function getNavIcon(icon: NavIcon) {
 
 type SidebarContentProps = {
   collapsed: boolean;
+  isDarkTheme: boolean;
+  onToggleTheme: () => void;
   onToggleCollapse?: () => void;
   showCollapseButton?: boolean;
 };
 
-function SidebarContent({ collapsed, onToggleCollapse, showCollapseButton = true }: SidebarContentProps) {
+function SidebarContent({
+  collapsed,
+  isDarkTheme,
+  onToggleTheme,
+  onToggleCollapse,
+  showCollapseButton = true,
+}: SidebarContentProps) {
   return (
     <>
       <div className="sidebar-scroll-region">
@@ -120,6 +130,18 @@ function SidebarContent({ collapsed, onToggleCollapse, showCollapseButton = true
       </div>
 
       <div className="sidebar-footer">
+        <Button
+          type="button"
+          variant="ghost"
+          className={cn('sidebar-theme-button', collapsed && 'sidebar-theme-button-collapsed')}
+          onClick={onToggleTheme}
+          aria-label={isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {isDarkTheme ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          {!collapsed ? <span>{isDarkTheme ? 'Light mode' : 'Dark mode'}</span> : null}
+        </Button>
+
         {showCollapseButton ? (
           <Button
             type="button"
@@ -199,6 +221,7 @@ export function WorkbenchSidebar() {
   const [isDesktop, setIsDesktop] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -235,6 +258,14 @@ export function WorkbenchSidebar() {
       return;
     }
 
+    setIsDarkTheme(document.documentElement.classList.contains('dark'));
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
     document.body.classList.toggle('mobile-sidebar-open', isMobileSidebarOpen);
 
     return () => {
@@ -252,10 +283,28 @@ export function WorkbenchSidebar() {
     });
   }
 
+  function handleToggleTheme() {
+    const nextIsDark = !isDarkTheme;
+    setIsDarkTheme(nextIsDark);
+
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('dark', nextIsDark);
+    }
+
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('mdviewer.theme', nextIsDark ? 'dark' : 'light');
+    }
+  }
+
   return (
     <>
       <aside className={cn('sidebar', isSidebarCollapsed && 'is-collapsed')}>
-        <SidebarContent collapsed={isSidebarCollapsed} onToggleCollapse={handleToggleCollapse} />
+        <SidebarContent
+          collapsed={isSidebarCollapsed}
+          isDarkTheme={isDarkTheme}
+          onToggleTheme={handleToggleTheme}
+          onToggleCollapse={handleToggleCollapse}
+        />
       </aside>
 
       {!isDesktop ? (
@@ -281,7 +330,12 @@ export function WorkbenchSidebar() {
                 </SheetDescription>
               </SheetHeader>
               <div className="mobile-sidebar-shell">
-                <SidebarContent collapsed={false} showCollapseButton={false} />
+                <SidebarContent
+                  collapsed={false}
+                  isDarkTheme={isDarkTheme}
+                  onToggleTheme={handleToggleTheme}
+                  showCollapseButton={false}
+                />
               </div>
             </SheetContent>
           </Sheet>

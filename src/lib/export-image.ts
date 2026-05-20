@@ -1,5 +1,5 @@
 import { toCanvas } from 'html-to-image';
-import { EXPORT_BACKGROUND_COLOR, getExportScale, waitForExportReady } from '@/lib/export-render';
+import { getExportBackgroundColor, getExportScale, waitForExportReady } from '@/lib/export-render';
 
 const MAX_CANVAS_DIMENSION_PX = 16_384;
 const MAX_CANVAS_AREA_PX = 134_217_728;
@@ -100,6 +100,7 @@ async function downloadCanvasAsPng(canvas: HTMLCanvasElement, filename: string) 
 
 async function captureCanvas(
   element: HTMLElement,
+  backgroundColor: string,
   scale: number,
   width: number,
   height: number,
@@ -108,7 +109,7 @@ async function captureCanvas(
   shouldExpandToFullHeight: boolean
 ) {
   return toCanvas(element, {
-    backgroundColor: EXPORT_BACKGROUND_COLOR,
+    backgroundColor,
     pixelRatio: scale,
     cacheBust: true,
     skipAutoScale: true,
@@ -158,7 +159,7 @@ async function captureCanvas(
           height: `${totalHeight}px`,
           maxHeight: 'none',
           overflow: 'visible',
-          background: EXPORT_BACKGROUND_COLOR,
+          background: backgroundColor,
           scrollBehavior: 'auto',
         }
       : {
@@ -166,7 +167,7 @@ async function captureCanvas(
           height: `${height}px`,
           maxHeight: 'none',
           overflow: 'hidden',
-          background: EXPORT_BACKGROUND_COLOR,
+          background: backgroundColor,
           scrollBehavior: 'auto',
           transform: `translateY(-${offsetY}px)`,
           transformOrigin: 'top left',
@@ -204,10 +205,12 @@ export async function exportElementToImage(element: HTMLElement, filename = 'mdv
 
   const plan = buildImageExportPlan(width, height);
   const fileCount = plan.sliceOffsets.length;
+  const backgroundColor = getExportBackgroundColor(element);
 
   if (fileCount === 1) {
     const canvas = await captureCanvas(
       element,
+      backgroundColor,
       plan.renderScale,
       width,
       height,
@@ -229,6 +232,7 @@ export async function exportElementToImage(element: HTMLElement, filename = 'mdv
     const remainingHeight = height - offsetY;
     const canvas = await captureCanvas(
       element,
+      backgroundColor,
       plan.renderScale,
       width,
       Math.min(sliceHeight, remainingHeight),

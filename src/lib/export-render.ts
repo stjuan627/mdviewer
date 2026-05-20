@@ -1,6 +1,17 @@
 export const EXPORT_BACKGROUND_COLOR = '#ffffff';
 export const EXPORT_MIN_SCALE = 2;
 
+export function getExportBackgroundColor(root: HTMLElement) {
+  const computed = window.getComputedStyle(root);
+  const backgroundColor = computed.backgroundColor;
+
+  if (backgroundColor && backgroundColor !== 'rgba(0, 0, 0, 0)' && backgroundColor !== 'transparent') {
+    return backgroundColor;
+  }
+
+  return EXPORT_BACKGROUND_COLOR;
+}
+
 async function waitForImages(root: HTMLElement) {
   const images = Array.from(root.querySelectorAll('img'));
 

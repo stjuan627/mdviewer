@@ -19,6 +19,8 @@ const pdfDocumentCss = `
     --theme-heading: var(--text-primary);
     --theme-heading-font: var(--font-heading);
     --theme-body-font: var(--font-body);
+    --theme-surface: #ffffff;
+    --theme-border: rgba(234, 224, 213, 0.92);
     --theme-inline-code-bg: rgba(44, 36, 33, 0.06);
     --theme-inline-code-color: var(--text-primary);
     --theme-pre-bg: #2c2421;
@@ -62,9 +64,13 @@ const pdfDocumentCss = `
   }
 
   .prose {
+    border: 1px solid var(--theme-border);
+    border-radius: 16px;
+    background: var(--theme-surface);
     color: var(--theme-text);
     font-family: var(--theme-body-font);
     line-height: 1.8;
+    padding: 18px 20px 24px;
   }
 
   .prose > :first-child {
@@ -243,6 +249,8 @@ const pdfDocumentCss = `
   }
 
   .prose[data-theme='paper'] {
+    --theme-surface: #fffdf9;
+    --theme-border: rgba(220, 199, 178, 0.92);
     --theme-text: #3d322d;
     --theme-heading: #241b18;
     --theme-heading-font: Georgia, "Times New Roman", serif;
@@ -261,6 +269,8 @@ const pdfDocumentCss = `
   }
 
   .prose[data-theme='blueprint'] {
+    --theme-surface: #f3f8ff;
+    --theme-border: rgba(147, 179, 214, 0.94);
     --theme-text: #23415c;
     --theme-heading: #102c44;
     --theme-heading-font: "Courier New", monospace;
@@ -287,21 +297,23 @@ const pdfDocumentCss = `
   }
 
   .prose[data-theme='nocturne'] {
-    --theme-text: #2b2432;
-    --theme-heading: #17111c;
+    --theme-surface: #161320;
+    --theme-border: rgba(84, 78, 120, 0.96);
+    --theme-text: #ddd8ef;
+    --theme-heading: #faf7ff;
     --theme-heading-font: Georgia, "Times New Roman", serif;
     --theme-body-font: "Segoe UI", Arial, sans-serif;
-    --theme-inline-code-bg: rgba(76, 57, 108, 0.1);
-    --theme-inline-code-color: #50386f;
-    --theme-pre-bg: #17111c;
-    --theme-pre-color: #f5f1ff;
-    --theme-blockquote-bg: #f3edff;
-    --theme-blockquote-border: #ad8af0;
-    --theme-blockquote-color: #5f4b7d;
-    --theme-table-border: rgba(176, 163, 209, 0.92);
-    --theme-link: #6f53ae;
-    --theme-link-hover: #563b90;
-    --theme-rule: rgba(176, 163, 209, 0.85);
+    --theme-inline-code-bg: rgba(184, 162, 255, 0.14);
+    --theme-inline-code-color: #d5c6ff;
+    --theme-pre-bg: #0c1220;
+    --theme-pre-color: #eff5ff;
+    --theme-blockquote-bg: #241f36;
+    --theme-blockquote-border: #b590ff;
+    --theme-blockquote-color: #cdc4ec;
+    --theme-table-border: rgba(88, 84, 117, 0.96);
+    --theme-link: #c8b0ff;
+    --theme-link-hover: #e4d5ff;
+    --theme-rule: rgba(88, 84, 117, 0.92);
   }
 `;
 

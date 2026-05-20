@@ -26,6 +26,31 @@ const {
 <!doctype html>
 <html lang="en">
   <head>
+    <script is:inline>
+      (function() {
+        const root = document.documentElement;
+
+        function resolveTheme() {
+          return localStorage.getItem('mdviewer.theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        }
+
+        function applyTheme() {
+          root.classList.toggle('dark', resolveTheme() === 'dark');
+        }
+
+        root.classList.add('is-loading');
+        applyTheme();
+        
+        window.addEventListener('load', () => {
+          setTimeout(() => {
+            root.classList.remove('is-loading');
+          }, 10);
+        });
+
+        document.addEventListener('astro:after-swap', applyTheme);
+        document.addEventListener('astro:page-load', applyTheme);
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
