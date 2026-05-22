@@ -141,12 +141,16 @@ html.dark .workbench-surface {
 }
 
 html.dark .workbench-hero {
-  background-color: #1a1614;
+  background-color: transparent; 
+   /* #1a1614; */
+  background-image: url('/workbench-hero-art-banner-bg-dark.png');
+  background-position: 85% 40%;
+  background-size: auto 270px;
 }
 
 html.dark .workbench-hero::before {
   background:
-    linear-gradient(90deg, rgba(26, 22, 20, 0.98) 0%, rgba(26, 22, 20, 0.96) 33%, rgba(26, 22, 20, 0.74) 48%, rgba(26, 22, 20, 0.16) 63%, rgba(26, 22, 20, 0.06) 100%);
+    linear-gradient(90deg, rgba(26, 22, 20, 0) 0%, rgba(26, 22, 20, 0) 33%, rgba(26, 22, 20, 1) 38%, rgba(26, 22, 20, 0.6) 53%, rgba(0, 0, 0, 0) 75%, rgb(0, 0, 0) 100%);
 }
 
 html.dark .hero-action {
