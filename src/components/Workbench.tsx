@@ -3,7 +3,18 @@ import CodeMirror from '@uiw/react-codemirror';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { useStore } from '@nanostores/react';
-import { Check, ChevronDown, Copy, Download, LoaderCircle, SwatchBook, Trash2, Upload } from 'lucide-react';
+import {
+  Check,
+  ChevronDown,
+  Copy,
+  Download,
+  LoaderCircle,
+  Maximize2,
+  Minimize2,
+  SwatchBook,
+  Trash2,
+  Upload,
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,6 +58,8 @@ type ShareResponsePayload = {
   error?: string;
 };
 
+type WorkbenchPaneMode = 'split' | 'editor' | 'preview';
+
 const DEFAULT_EXPORT_OPTIONS: WorkbenchExportOption[] = ['html', 'pdf', 'image'];
 
 export function Workbench({
@@ -69,6 +82,7 @@ export function Workbench({
   const [exportImageState, setExportImageState] = useState<'idle' | 'downloading' | 'downloaded' | 'error'>('idle');
   const [quickActionPdfState, setQuickActionPdfState] = useState<'idle' | 'downloading' | 'downloaded' | 'error'>('idle');
   const [toolbarNotice, setToolbarNotice] = useState<string | null>(null);
+  const [paneMode, setPaneMode] = useState<WorkbenchPaneMode>('split');
   const editorScrollRef = useRef<HTMLElement | null>(null);
   const previewScrollRef = useRef<HTMLDivElement | null>(null);
   const syncingPaneRef = useRef<'editor' | 'preview' | null>(null);
@@ -193,6 +207,18 @@ export function Workbench({
         document.body.removeChild(textarea);
       }
     }
+  }
+
+  async function waitForNextFrame(frameCount = 1) {
+    for (let frameIndex = 0; frameIndex < frameCount; frameIndex += 1) {
+      await new Promise<void>((resolve) => {
+        window.requestAnimationFrame(() => resolve());
+      });
+    }
+  }
+
+  function togglePaneMode(targetPane: Exclude<WorkbenchPaneMode, 'split'>) {
+    setPaneMode((currentMode) => (currentMode === targetPane ? 'split' : targetPane));
   }
 
   function handleClear() {
@@ -340,9 +366,7 @@ export function Workbench({
     setToolbarNotice('Preparing your PDF...');
 
     try {
-      await new Promise<void>((resolve) => {
-        window.requestAnimationFrame(() => resolve());
-      });
+      await waitForNextFrame();
       submitPdfExportForm('/api/pdf-quick');
 
       setQuickActionPdfState('downloaded');
@@ -370,18 +394,23 @@ export function Workbench({
       exportImageResetRef.current = null;
     }
 
-    const previewElement = previewScrollRef.current;
-
-    if (!previewElement) {
-      setExportImageState('error');
-      setToolbarNotice('PNG export failed.');
-      return;
-    }
-
     setExportImageState('downloading');
     setToolbarNotice('Preparing PNG...');
 
+    const restoreEditorPane = paneMode === 'editor';
+
     try {
+      if (restoreEditorPane) {
+        setPaneMode('preview');
+        await waitForNextFrame(2);
+      }
+
+      const previewElement = previewScrollRef.current;
+
+      if (!previewElement) {
+        throw new Error('Preview element is unavailable.');
+      }
+
       const result = await exportElementToImage(previewElement);
       setExportImageState('downloaded');
       setToolbarNotice(
@@ -392,6 +421,10 @@ export function Workbench({
       setExportImageState('error');
       setToolbarNotice('PNG export failed.');
     } finally {
+      if (restoreEditorPane) {
+        setPaneMode('editor');
+      }
+
       exportImageResetRef.current = window.setTimeout(() => {
         setExportImageState('idle');
         setToolbarNotice(null);
@@ -421,6 +454,8 @@ export function Workbench({
 
   const hasExportMenu = exportOptions.length > 0;
   const isExporting = quickActionPdfState === 'downloading' || exportImageState === 'downloading';
+  const isEditorMaximized = paneMode === 'editor';
+  const isPreviewMaximized = paneMode === 'preview';
   const exportButtonLabel =
     quickActionPdfState === 'downloading'
       ? 'Exporting PDF'
@@ -527,6 +562,20 @@ export function Workbench({
                   aria-hidden="true"
                   onChange={handleUploadMarkdown}
                 />
+                <button
+                  type="button"
+                  className="toolbar-icon-button"
+                  aria-label={isEditorMaximized ? 'Restore split view' : 'Maximize editor'}
+                  aria-pressed={isEditorMaximized}
+                  title={isEditorMaximized ? 'Restore split view' : 'Maximize editor'}
+                  onClick={() => togglePaneMode('editor')}
+                >
+                  {isEditorMaximized ? (
+                    <Minimize2 className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
+                  ) : (
+                    <Maximize2 className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -583,6 +632,20 @@ export function Workbench({
                   <Download className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
                 )}
               </button>
+              <button
+                type="button"
+                className="toolbar-icon-button"
+                aria-label={isPreviewMaximized ? 'Restore split view' : 'Maximize preview'}
+                aria-pressed={isPreviewMaximized}
+                title={isPreviewMaximized ? 'Restore split view' : 'Maximize preview'}
+                onClick={() => togglePaneMode('preview')}
+              >
+                {isPreviewMaximized ? (
+                  <Minimize2 className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
+                ) : (
+                  <Maximize2 className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
+                )}
+              </button>
             </div>
           </div>
 
@@ -591,8 +654,27 @@ export function Workbench({
             {payloadDropped ? <span>已回落到默认示例</span> : null}
           </div>
 
-          <div className="workbench-body">
-            <section className="workbench-pane workbench-pane-editor">
+          <div
+            className={[
+              'workbench-body',
+              isEditorMaximized ? 'is-editor-maximized' : '',
+              isPreviewMaximized ? 'is-preview-maximized' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            data-pane-mode={paneMode}
+          >
+            <section
+              className={[
+                'workbench-pane',
+                'workbench-pane-editor',
+                isPreviewMaximized ? 'is-hidden' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              id="workbench-editor-pane"
+              aria-hidden={isPreviewMaximized}
+            >
               <div className="workbench-editor-shell" data-testid="markdown-input" aria-label="Markdown input">
                 <CodeMirror
                   value={draftMarkdown}
@@ -617,7 +699,17 @@ export function Workbench({
               </div>
             </section>
 
-            <section className="workbench-pane workbench-pane-preview">
+            <section
+              className={[
+                'workbench-pane',
+                'workbench-pane-preview',
+                isEditorMaximized ? 'is-hidden' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              id="workbench-preview-pane"
+              aria-hidden={isEditorMaximized}
+            >
               <div
                 ref={previewScrollRef}
                 className="preview-frame prose"
