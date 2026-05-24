@@ -55,6 +55,7 @@ const markdownToHtmlFaqItems: LandingSectionFaqItem[] = [
 ];
 
 export const markdownToHtmlLandingPage: LandingPageConfig = {
+  locale: 'en',
   slug: 'markdown-to-html',
   path: '/markdown-to-html',
   prerender: true,

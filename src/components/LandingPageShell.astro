@@ -1,0 +1,42 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import LandingSections from '@/components/LandingSections.astro';
+import { WorkbenchBoot } from '@/components/WorkbenchBoot';
+import { getAlternateLocaleUrls, getLandingPageConfig, resolveCanonicalUrl } from '@/lib/landing-pages';
+import type { LandingPageSlug } from '@/lib/landing-pages/types';
+import type { Locale } from '@/lib/i18n';
+
+interface Props {
+  slug: LandingPageSlug;
+  locale: Locale;
+}
+
+const { slug, locale } = Astro.props;
+const landing = getLandingPageConfig(slug, locale);
+const canonicalUrl = resolveCanonicalUrl(landing.path, locale, Astro.site);
+const alternateLocales = getAlternateLocaleUrls(landing.path, Astro.site);
+---
+
+<BaseLayout
+  title={landing.title}
+  description={landing.description}
+  canonicalUrl={canonicalUrl}
+  schema={landing.schema}
+  locale={locale}
+  alternateLocales={alternateLocales}
+>
+  <WorkbenchBoot
+    client:load
+    locale={locale}
+    title={landing.heroTitle}
+    description={landing.heroDescription}
+    initialMarkdown={landing.initialMarkdown}
+    variant={landing.workbenchVariant}
+  />
+
+  {landing.sections.length > 0 ? (
+    <div class="shell">
+      <LandingSections sections={landing.sections} />
+    </div>
+  ) : null}
+</BaseLayout>

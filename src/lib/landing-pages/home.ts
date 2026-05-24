@@ -3,6 +3,7 @@ import { buildSoftwareSchema } from '@/lib/landing-pages/shared';
 import type { LandingPageConfig } from '@/lib/landing-pages/types';
 
 export const homeLandingPage: LandingPageConfig = {
+  locale: 'en',
   slug: 'home',
   path: '/',
   prerender: false,

@@ -1,3 +1,5 @@
+import type { Locale } from '@/lib/i18n';
+
 export type LandingSectionList = {
   title: string;
   description?: string;
@@ -30,6 +32,7 @@ export type LandingPageSlug = 'home' | 'markdown-to-pdf' | 'markdown-to-html' | 
 export type LandingPagePath = '/' | '/markdown-to-pdf' | '/markdown-to-html' | '/markdown-to-image';
 
 export type LandingPageConfig = {
+  locale: Locale;
   slug: LandingPageSlug;
   path: LandingPagePath;
   prerender: boolean;

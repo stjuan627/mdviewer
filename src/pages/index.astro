@@ -1,26 +1,7 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import { WorkbenchBoot } from '@/components/WorkbenchBoot';
-import { getLandingPageConfig, resolveCanonicalUrl } from '@/lib/landing-pages';
+import LandingPageShell from '@/components/LandingPageShell.astro';
 
 export const prerender = false;
-
-const landing = getLandingPageConfig('home');
-
-const canonicalUrl = resolveCanonicalUrl(landing.path, Astro.site);
 ---
 
-<BaseLayout
-  title={landing.title}
-  description={landing.description}
-  canonicalUrl={canonicalUrl}
-  schema={landing.schema}
->
-  <WorkbenchBoot
-    client:load
-    title={landing.heroTitle}
-    description={landing.heroDescription}
-    initialMarkdown={landing.initialMarkdown}
-    variant={landing.workbenchVariant}
-  />
-</BaseLayout>
+<LandingPageShell slug="home" locale="en" />

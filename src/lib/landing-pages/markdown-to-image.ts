@@ -60,6 +60,7 @@ const markdownToImageFaqItems: LandingSectionFaqItem[] = [
 ];
 
 export const markdownToImageLandingPage: LandingPageConfig = {
+  locale: 'en',
   slug: 'markdown-to-image',
   path: '/markdown-to-image',
   prerender: true,

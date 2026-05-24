@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { MAX_MARKDOWN_LENGTH, MAX_URL_PAYLOAD_LENGTH } from '@/lib/constants';
 import { homeInitialMarkdown } from '@/lib/landing-pages/content/home';
+import { DEFAULT_LOCALE, localeSchema } from '@/lib/i18n';
 import { DEFAULT_THEME_ID, THEME_IDS } from '@/lib/themes';
 
 export const renderRequestSchema = z.object({
@@ -11,6 +12,11 @@ export const themeIdSchema = z.enum(THEME_IDS);
 
 export const createShareSchema = renderRequestSchema.extend({
   themeId: themeIdSchema.default(DEFAULT_THEME_ID),
+});
+
+export const pdfRequestSchema = renderRequestSchema.extend({
+  themeId: themeIdSchema.default(DEFAULT_THEME_ID),
+  locale: localeSchema.default(DEFAULT_LOCALE),
 });
 
 export type WorkbenchInit = {

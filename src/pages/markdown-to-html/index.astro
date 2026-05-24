@@ -1,30 +1,5 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import LandingSections from '@/components/LandingSections.astro';
-import { WorkbenchBoot } from '@/components/WorkbenchBoot';
-import { getLandingPageConfig, resolveCanonicalUrl } from '@/lib/landing-pages';
-
-export const prerender = true;
-
-const landing = getLandingPageConfig('markdown-to-html');
-const canonicalUrl = resolveCanonicalUrl(landing.path, Astro.site);
+import LandingPageShell from '@/components/LandingPageShell.astro';
 ---
 
-<BaseLayout
-  title={landing.title}
-  description={landing.description}
-  canonicalUrl={canonicalUrl}
-  schema={landing.schema}
->
-  <WorkbenchBoot
-    client:load
-    title={landing.heroTitle}
-    description={landing.heroDescription}
-    initialMarkdown={landing.initialMarkdown}
-    variant={landing.workbenchVariant}
-  />
-
-  <div class="shell">
-    <LandingSections sections={landing.sections} />
-  </div>
-</BaseLayout>
+<LandingPageShell slug="markdown-to-html" locale="en" />

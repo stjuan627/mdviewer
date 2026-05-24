@@ -24,7 +24,9 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useI18n } from '@/components/i18n/I18nProvider';
 import { RENDER_DEBOUNCE_MS } from '@/lib/constants';
+import type { Locale } from '@/lib/i18n';
 import {
   $draftMarkdown,
   $markdown,
@@ -45,6 +47,7 @@ import type { WorkbenchExportOption } from '@/lib/landing-pages';
 import { themeOptions, type ThemeId } from '@/lib/themes';
 
 export type WorkbenchProps = {
+  locale: Locale;
   initialMarkdown: string;
   payloadDropped: boolean;
   initialThemeId: ThemeId;
@@ -63,6 +66,7 @@ type WorkbenchPaneMode = 'split' | 'editor' | 'preview';
 const DEFAULT_EXPORT_OPTIONS: WorkbenchExportOption[] = ['html', 'pdf', 'image'];
 
 export function Workbench({
+  locale,
   initialMarkdown,
   payloadDropped,
   initialThemeId,
@@ -70,6 +74,7 @@ export function Workbench({
   description,
   exportOptions = DEFAULT_EXPORT_OPTIONS,
 }: WorkbenchProps) {
+  const { t } = useI18n();
   const draftMarkdown = useStore($draftMarkdown);
   const committedMarkdown = useStore($markdown);
   const rendered = useStore($rendered);
@@ -222,7 +227,7 @@ export function Workbench({
   }
 
   function handleClear() {
-    if (!window.confirm('Clear the current Markdown content?')) {
+    if (!window.confirm(t('workbench.confirmClear'))) {
       return;
     }
 
@@ -342,8 +347,14 @@ export function Workbench({
     themeInput.name = 'themeId';
     themeInput.value = themeId;
 
+    const localeInput = document.createElement('input');
+    localeInput.type = 'hidden';
+    localeInput.name = 'locale';
+    localeInput.value = locale;
+
     form.appendChild(markdownInput);
     form.appendChild(themeInput);
+    form.appendChild(localeInput);
     document.body.appendChild(form);
 
     form.submit();
@@ -363,18 +374,18 @@ export function Workbench({
     }
 
     setQuickActionPdfState('downloading');
-    setToolbarNotice('Preparing your PDF...');
+    setToolbarNotice(t('workbench.notice.preparingPdf'));
 
     try {
       await waitForNextFrame();
       submitPdfExportForm('/api/pdf-quick');
 
       setQuickActionPdfState('downloaded');
-      setToolbarNotice('PDF requested.');
+      setToolbarNotice(t('workbench.notice.pdfRequested'));
     } catch (error) {
       console.error(error);
       setQuickActionPdfState('error');
-      setToolbarNotice('PDF export failed.');
+      setToolbarNotice(t('workbench.notice.pdfFailed'));
     } finally {
       quickActionPdfResetRef.current = window.setTimeout(() => {
         setQuickActionPdfState('idle');
@@ -395,7 +406,7 @@ export function Workbench({
     }
 
     setExportImageState('downloading');
-    setToolbarNotice('Preparing PNG...');
+    setToolbarNotice(t('workbench.notice.preparingPng'));
 
     const restoreEditorPane = paneMode === 'editor';
 
@@ -414,12 +425,14 @@ export function Workbench({
       const result = await exportElementToImage(previewElement);
       setExportImageState('downloaded');
       setToolbarNotice(
-        result.fileCount > 1 ? `PNG exported as ${result.fileCount} files.` : 'PNG downloaded.'
+        result.fileCount > 1
+          ? t('workbench.notice.pngMulti', { count: result.fileCount })
+          : t('workbench.notice.pngDownloaded')
       );
     } catch (error) {
       console.error(error);
       setExportImageState('error');
-      setToolbarNotice('PNG export failed.');
+      setToolbarNotice(t('workbench.notice.pngFailed'));
     } finally {
       if (restoreEditorPane) {
         setPaneMode('editor');
@@ -458,10 +471,10 @@ export function Workbench({
   const isPreviewMaximized = paneMode === 'preview';
   const exportButtonLabel =
     quickActionPdfState === 'downloading'
-      ? 'Exporting PDF'
+      ? t('workbench.exportingPdf')
       : exportImageState === 'downloading'
-        ? 'Exporting PNG'
-        : 'Export';
+        ? t('workbench.exportingPng')
+        : t('workbench.export');
 
   return (
     <section className="shell shell-workbench" data-workbench-hydrated={isHydrated ? 'true' : 'false'}>
@@ -479,6 +492,7 @@ export function Workbench({
                   <button
                     type="button"
                     className="hero-action hero-action-export"
+                    data-testid="export-menu-trigger"
                     aria-label={exportButtonLabel}
                     aria-busy={isExporting}
                     disabled={isExporting}
@@ -505,7 +519,7 @@ export function Workbench({
                       disabled={quickActionPdfState === 'downloading'}
                       onClick={handleQuickActionPdf}
                     >
-                      {quickActionPdfState === 'downloading' ? 'PDF (Exporting...)' : 'PDF'}
+                      {quickActionPdfState === 'downloading' ? t('workbench.menu.pdfExporting') : t('workbench.menu.pdf')}
                     </DropdownMenuItem>
                   ) : null}
                   {exportOptions.includes('image') ? (
@@ -514,7 +528,7 @@ export function Workbench({
                       disabled={exportImageState === 'downloading'}
                       onClick={handleExportImage}
                     >
-                      {exportImageState === 'downloading' ? 'PNG (Exporting...)' : 'PNG'}
+                      {exportImageState === 'downloading' ? t('workbench.menu.pngExporting') : t('workbench.menu.png')}
                     </DropdownMenuItem>
                   ) : null}
                 </DropdownMenuContent>
@@ -528,14 +542,14 @@ export function Workbench({
           <div className="workbench-toolbar">
             <div className="workbench-toolbar-left">
               <div className="workbench-editor-actions" aria-label="Editor actions toolbar">
-                <button type="button" className="toolbar-icon-button" aria-label="Clear content" title="Clear content" onClick={handleClear}>
+                <button type="button" className="toolbar-icon-button" aria-label={t('workbench.toolbar.clear')} title={t('workbench.toolbar.clear')} onClick={handleClear}>
                   <Trash2 className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
                 </button>
                 <button
                   type="button"
                   className="toolbar-icon-button"
-                  aria-label={copyMarkdownState === 'copied' ? 'Copied' : 'Copy Markdown'}
-                  title={copyMarkdownState === 'copied' ? 'Copied' : 'Copy Markdown'}
+                  aria-label={copyMarkdownState === 'copied' ? t('workbench.toolbar.copied') : t('workbench.toolbar.copyMarkdown')}
+                  title={copyMarkdownState === 'copied' ? t('workbench.toolbar.copied') : t('workbench.toolbar.copyMarkdown')}
                   onClick={handleCopyMarkdown}
                 >
                   {copyMarkdownState === 'copied' ? (
@@ -547,8 +561,8 @@ export function Workbench({
                 <button
                   type="button"
                   className="toolbar-icon-button"
-                  aria-label="Upload Markdown"
-                  title="Upload Markdown"
+                  aria-label={t('workbench.toolbar.upload')}
+                  title={t('workbench.toolbar.upload')}
                   onClick={handleOpenUpload}
                 >
                   <Upload className="toolbar-icon-svg" aria-hidden="true" size={16} strokeWidth={1.75} />
@@ -565,9 +579,9 @@ export function Workbench({
                 <button
                   type="button"
                   className="toolbar-icon-button"
-                  aria-label={isEditorMaximized ? 'Restore split view' : 'Maximize editor'}
+                  aria-label={isEditorMaximized ? t('workbench.toolbar.restoreSplit') : t('workbench.toolbar.maximizeEditor')}
                   aria-pressed={isEditorMaximized}
-                  title={isEditorMaximized ? 'Restore split view' : 'Maximize editor'}
+                  title={isEditorMaximized ? t('workbench.toolbar.restoreSplit') : t('workbench.toolbar.maximizeEditor')}
                   onClick={() => togglePaneMode('editor')}
                 >
                   {isEditorMaximized ? (
@@ -582,22 +596,22 @@ export function Workbench({
             <div className="workbench-toolbar-right">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isHydrated}>
-                  <button type="button" className="toolbar-theme-trigger" aria-label="Theme selector">
+                  <button type="button" className="toolbar-theme-trigger" aria-label={t('workbench.theme.trigger')} data-testid="theme-trigger">
                     <SwatchBook className="toolbar-theme-icon" aria-hidden="true" size={14} strokeWidth={1.9} />
                     <span className="toolbar-theme-value">
-                      {themeOptions.find((option) => option.id === themeId)?.label}
+                      {themeOptions.find((option) => option.id === themeId)?.label[locale]}
                     </span>
                     <ChevronDown className="toolbar-theme-caret" aria-hidden="true" size={14} strokeWidth={1.9} />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="toolbar-theme-menu" align="end">
-                  <DropdownMenuLabel>Select Theme</DropdownMenuLabel>
+                  <DropdownMenuLabel>{t('workbench.theme.select')}</DropdownMenuLabel>
                   <DropdownMenuRadioGroup value={themeId} onValueChange={(value) => setThemeId(value as ThemeId)}>
                     {themeOptions.map((option) => (
-                      <DropdownMenuRadioItem key={option.id} value={option.id} className="toolbar-theme-menu-item">
+                      <DropdownMenuRadioItem key={option.id} value={option.id} className="toolbar-theme-menu-item" data-testid={`theme-option-${option.id}`}>
                         <span className="toolbar-theme-menu-copy">
-                          <span className="toolbar-theme-menu-title">{option.label}</span>
-                          <span className="toolbar-theme-menu-summary">{option.summary}</span>
+                          <span className="toolbar-theme-menu-title">{option.label[locale]}</span>
+                          <span className="toolbar-theme-menu-summary">{option.summary[locale]}</span>
                         </span>
                       </DropdownMenuRadioItem>
                     ))}
@@ -608,8 +622,8 @@ export function Workbench({
                 type="button"
                 className="toolbar-icon-button"
                 data-testid="copy-html"
-                aria-label={copyHtmlState === 'copied' ? 'Copied HTML' : 'Copy HTML'}
-                title={copyHtmlState === 'copied' ? 'Copied HTML' : 'Copy HTML'}
+                aria-label={copyHtmlState === 'copied' ? t('workbench.copiedHtml') : t('workbench.copyHtml')}
+                title={copyHtmlState === 'copied' ? t('workbench.copiedHtml') : t('workbench.copyHtml')}
                 onClick={handleCopyHtml}
               >
                 {copyHtmlState === 'copied' ? (
@@ -622,8 +636,8 @@ export function Workbench({
                 type="button"
                 className="toolbar-icon-button"
                 data-testid="download-html"
-                aria-label={downloadHtmlState === 'downloaded' ? 'Downloaded HTML' : 'Download HTML'}
-                title={downloadHtmlState === 'downloaded' ? 'Downloaded HTML' : 'Download HTML'}
+                aria-label={downloadHtmlState === 'downloaded' ? t('workbench.downloadedHtml') : t('workbench.downloadHtml')}
+                title={downloadHtmlState === 'downloaded' ? t('workbench.downloadedHtml') : t('workbench.downloadHtml')}
                 onClick={handleDownloadHtml}
               >
                 {downloadHtmlState === 'downloaded' ? (
@@ -635,9 +649,9 @@ export function Workbench({
               <button
                 type="button"
                 className="toolbar-icon-button"
-                aria-label={isPreviewMaximized ? 'Restore split view' : 'Maximize preview'}
+                aria-label={isPreviewMaximized ? t('workbench.toolbar.restoreSplit') : t('workbench.toolbar.maximizePreview')}
                 aria-pressed={isPreviewMaximized}
-                title={isPreviewMaximized ? 'Restore split view' : 'Maximize preview'}
+                title={isPreviewMaximized ? t('workbench.toolbar.restoreSplit') : t('workbench.toolbar.maximizePreview')}
                 onClick={() => togglePaneMode('preview')}
               >
                 {isPreviewMaximized ? (
@@ -651,7 +665,7 @@ export function Workbench({
 
           <div className="toolbar-notice" data-testid="workbench-notice" role="status">
             {toolbarNotice ? <span>{toolbarNotice}</span> : null}
-            {payloadDropped ? <span>已回落到默认示例</span> : null}
+            {payloadDropped ? <span>{t('workbench.notice.fallback')}</span> : null}
           </div>
 
           <div
@@ -689,7 +703,7 @@ export function Workbench({
                   className="workbench-codemirror"
                   extensions={extensions}
                   indentWithTab
-                  placeholder="Write your markdown here..."
+                  placeholder={t('workbench.placeholder')}
                   theme="light"
                   onCreateEditor={(editorView) => {
                     editorScrollRef.current = editorView.scrollDOM;
@@ -723,14 +737,14 @@ export function Workbench({
       </div>
 
       {quickActionPdfState === 'downloading' ? (
-        <div className="pdf-export-overlay" role="status" aria-live="polite" aria-label="Preparing PDF export">
+        <div className="pdf-export-overlay" role="status" aria-live="polite" aria-label={t('workbench.overlay.preparingPdf')}>
           <div className="pdf-export-overlay-card">
             <div className="pdf-export-overlay-spinner" aria-hidden="true">
               <LoaderCircle className="pdf-export-overlay-spinner-icon" size={18} strokeWidth={2} />
             </div>
             <div className="pdf-export-overlay-copy">
-              <strong>Preparing PDF</strong>
-              <span>Sending HTML to Cloudflare Quick Actions...</span>
+              <strong>{t('workbench.overlay.preparingPdf')}</strong>
+              <span>{t('workbench.overlay.sendingPdf')}</span>
             </div>
           </div>
         </div>
