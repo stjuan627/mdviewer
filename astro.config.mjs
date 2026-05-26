@@ -6,6 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   output: 'static',
   site: 'https://mdviewer.net',
+  trailingSlash: 'never',
   adapter: cloudflare(),
   integrations: [react()],
   vite: {
