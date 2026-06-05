@@ -1,15 +1,38 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getTranslation } from '@/components/i18n/I18nProvider';
+import { normalizeLocale } from '@/lib/i18n';
+
+const locale = normalizeLocale(Astro.url.searchParams.get('locale'));
 ---
 
-<BaseLayout title="MD Viewer Print Preview" description="Printable Markdown preview." appShell={false}>
+<BaseLayout
+  title={getTranslation(locale, 'print.title')}
+  description={getTranslation(locale, 'print.description')}
+  appShell={false}
+  showSidebar={false}
+  locale={locale}
+>
   <section class="print-preview-shell">
-    <div class="print-preview-status" data-print-preview-status>Preparing print preview...</div>
+    <div class="print-preview-status" data-print-preview-status>{getTranslation(locale, 'print.preparing')}</div>
     <article class="print-preview-frame prose" data-print-preview-frame hidden></article>
   </section>
 
-  <script is:inline>
+  <script
+    is:inline
+    define:vars={{
+      locale,
+      unavailableMessage: getTranslation(locale, 'print.unavailable'),
+      openFailedMessage: getTranslation(locale, 'print.openFailed'),
+      restoreFailedMessage: getTranslation(locale, 'print.restoreFailed'),
+    }}
+  >
     const storageKey = 'mdviewer-browser-print-payload';
+    const messages = {
+      unavailable: unavailableMessage,
+      openFailed: openFailedMessage,
+      restoreFailed: restoreFailedMessage,
+    };
     const statusNode = document.querySelector('[data-print-preview-status]');
     const frameNode = document.querySelector('[data-print-preview-frame]');
 
@@ -22,7 +45,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
     const rawPayload = window.localStorage.getItem(storageKey);
 
     if (!rawPayload || !frameNode) {
-      setStatus('Print preview is unavailable. Return to the workbench and try again.');
+      setStatus(messages.unavailable);
     } else {
       window.localStorage.removeItem(storageKey);
 
@@ -52,11 +75,11 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 
         void openPrintDialog().catch((error) => {
           console.error(error);
-          setStatus('Print dialog could not be opened automatically. Use your browser print command.');
+          setStatus(messages.openFailed);
         });
       } catch (error) {
         console.error(error);
-        setStatus('Print preview payload could not be restored.');
+        setStatus(messages.restoreFailed);
       }
     }
   </script>

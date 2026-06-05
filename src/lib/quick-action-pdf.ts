@@ -1,5 +1,8 @@
 import { buildServerPdfDocument } from '@/lib/server-pdf';
-import { createShareSchema, normalizeMarkdown } from '@/lib/schemas';
+import type { Locale } from '@/lib/i18n';
+import { getTranslation } from '@/components/i18n/I18nProvider';
+import { DEFAULT_LOCALE, localeSchema } from '@/lib/i18n';
+import { normalizeMarkdown, pdfRequestSchema } from '@/lib/schemas';
 import type { ThemeId } from '@/lib/themes';
 
 const QUICK_ACTION_ENDPOINT = 'https://api.cloudflare.com/client/v4/accounts';
@@ -7,6 +10,7 @@ const QUICK_ACTION_ENDPOINT = 'https://api.cloudflare.com/client/v4/accounts';
 type QuickActionPayload = {
   markdown: string;
   themeId: ThemeId;
+  locale: Locale;
 };
 
 export async function parsePdfRequestPayload(request: Request) {
@@ -14,15 +18,19 @@ export async function parsePdfRequestPayload(request: Request) {
   const payload = contentType.includes('application/json')
     ? await request.json()
     : Object.fromEntries((await request.formData()).entries());
-  const result = createShareSchema.safeParse(payload);
+  const locale = localeSchema.safeParse(payload.locale).success
+    ? localeSchema.parse(payload.locale)
+    : DEFAULT_LOCALE;
+  const result = pdfRequestSchema.safeParse(payload);
 
   if (!result.success) {
-    throw new Error('Invalid PDF export payload.');
+    throw new Error(getTranslation(locale, 'api.pdf.invalidPayload'));
   }
 
   return {
     markdown: normalizeMarkdown(result.data.markdown),
     themeId: result.data.themeId,
+    locale: result.data.locale,
   };
 }
 

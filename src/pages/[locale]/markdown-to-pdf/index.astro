@@ -1,0 +1,11 @@
+---
+import LandingPageShell from '@/components/LandingPageShell.astro';
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return [{ params: { locale: 'zh-cn' } }];
+}
+---
+
+<LandingPageShell slug="markdown-to-pdf" locale="zh-cn" />

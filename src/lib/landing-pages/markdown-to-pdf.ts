@@ -50,6 +50,7 @@ const markdownToPdfFaqItems: LandingSectionFaqItem[] = [
 ];
 
 export const markdownToPdfLandingPage: LandingPageConfig = {
+  locale: 'en',
   slug: 'markdown-to-pdf',
   path: '/markdown-to-pdf',
   prerender: true,

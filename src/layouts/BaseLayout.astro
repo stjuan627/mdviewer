@@ -3,6 +3,8 @@ import 'katex/dist/katex.min.css';
 import '@/styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import { WorkbenchSidebar } from '@/components/WorkbenchSidebar';
+import type { Locale } from '@/lib/i18n';
+import { localeToLangTag } from '@/lib/i18n';
 
 interface Props {
   title: string;
@@ -11,6 +13,8 @@ interface Props {
   schema?: Array<Record<string, unknown>>;
   appShell?: boolean;
   showSidebar?: boolean;
+  locale?: Locale;
+  alternateLocales?: Array<{ locale: Locale | 'x-default'; href: string }>;
 }
 
 const {
@@ -20,15 +24,18 @@ const {
   schema = [],
   appShell = true,
   showSidebar = true,
+  locale = 'en',
+  alternateLocales = [],
 } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={localeToLangTag[locale]} data-locale={locale}>
   <head>
     <script is:inline>
       (function() {
         const root = document.documentElement;
+        const locale = root.dataset.locale;
 
         function resolveTheme() {
           return localStorage.getItem('mdviewer.theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -38,8 +45,18 @@ const {
           root.classList.toggle('dark', resolveTheme() === 'dark');
         }
 
+        function applyLocale() {
+          if (!locale) {
+            return;
+          }
+
+          root.lang = locale === 'zh-cn' ? 'zh-CN' : 'en';
+          root.dataset.locale = locale;
+        }
+
         root.classList.add('is-loading');
         applyTheme();
+        applyLocale();
         
         window.addEventListener('load', () => {
           setTimeout(() => {
@@ -47,8 +64,14 @@ const {
           }, 10);
         });
 
-        document.addEventListener('astro:after-swap', applyTheme);
-        document.addEventListener('astro:page-load', applyTheme);
+        document.addEventListener('astro:after-swap', () => {
+          applyTheme();
+          applyLocale();
+        });
+        document.addEventListener('astro:page-load', () => {
+          applyTheme();
+          applyLocale();
+        });
       })();
     </script>
     <meta charset="UTF-8" />
@@ -61,6 +84,9 @@ const {
     <title>{title}</title>
     <meta name="description" content={description} />
     {canonicalUrl ? <link rel="canonical" href={canonicalUrl} /> : null}
+    {alternateLocales.map((entry) => (
+      <link rel="alternate" hreflang={entry.locale === 'zh-cn' ? 'zh-CN' : entry.locale} href={entry.href} />
+    ))}
     <script defer data-domain="mdviewer.net" src="https://app.pageview.app/js/script.js"></script>
     {schema.map((entry) => (
       <script is:inline type="application/ld+json" set:html={JSON.stringify(entry)} />
@@ -69,7 +95,7 @@ const {
   <body class:list={[appShell && 'app-shell-body']}>
     {appShell ? (
       <div class="app-container">
-        {showSidebar ? <WorkbenchSidebar client:load /> : null}
+        {showSidebar ? <WorkbenchSidebar client:load locale={locale} /> : null}
         <main class="main-content">
           <slot />
         </main>

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { I18nProvider } from '@/components/i18n/I18nProvider';
 import { Workbench } from '@/components/Workbench';
+import type { Locale } from '@/lib/i18n';
 import type { WorkbenchLandingVariant } from '@/lib/landing-pages';
 import {
   buildWorkbenchRouteInit,
@@ -9,6 +11,7 @@ import {
 } from '@/lib/workbench-navigation-store';
 
 type WorkbenchBootProps = {
+  locale: Locale;
   title?: string;
   description?: string;
   initialMarkdown?: string;
@@ -46,6 +49,7 @@ function readInitialWorkbenchInit(initialMarkdown?: string) {
 }
 
 export function WorkbenchBoot({
+  locale,
   title,
   description,
   initialMarkdown,
@@ -87,13 +91,16 @@ export function WorkbenchBoot({
   }, [initialMarkdown]);
 
   return (
-    <Workbench
-      initialMarkdown={init.markdown}
-      payloadDropped={init.payloadDropped}
-      initialThemeId={init.themeId}
-      title={title}
-      description={description}
-      exportOptions={variant?.exportOptions}
-    />
+    <I18nProvider locale={locale}>
+      <Workbench
+        locale={locale}
+        initialMarkdown={init.markdown}
+        payloadDropped={init.payloadDropped}
+        initialThemeId={init.themeId}
+        title={title}
+        description={description}
+        exportOptions={variant?.exportOptions}
+      />
+    </I18nProvider>
   );
 }

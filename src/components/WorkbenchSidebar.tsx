@@ -15,6 +15,7 @@ import {
   Sun,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { I18nProvider, useI18n } from '@/components/i18n/I18nProvider';
 import {
   Sheet,
   SheetContent,
@@ -24,6 +25,8 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import type { Locale } from '@/lib/i18n';
+import { swapLocaleInPath } from '@/lib/i18n';
 
 const DESKTOP_MEDIA_QUERY = '(min-width: 1101px)';
 const DESKTOP_COLLAPSE_STORAGE_KEY = 'mdviewer.sidebar-collapsed';
@@ -31,7 +34,7 @@ const DESKTOP_COLLAPSE_STORAGE_KEY = 'mdviewer.sidebar-collapsed';
 type NavIcon = 'html' | 'pdf' | 'image' | 'toc' | 'guides' | 'examples' | 'updates' | 'about' | 'roadmap' | 'help';
 
 type NavItem = {
-  label: string;
+  labelKey: 'sidebar.markdownToHtml' | 'sidebar.markdownToPdf' | 'sidebar.markdownToImage' | 'sidebar.help';
   meta?: string;
   href: string | null;
   icon: NavIcon;
@@ -39,18 +42,18 @@ type NavItem = {
 };
 
 type NavSection = {
-  label?: string;
+  labelKey?: 'sidebar.tools';
   items: NavItem[];
   secondary?: boolean;
 };
 
 const navSections: NavSection[] = [
   {
-    label: 'Tools',
+    labelKey: 'sidebar.tools',
     items: [
-      { label: 'Markdown to HTML', href: '/markdown-to-html', icon: 'html' },
-      { label: 'Markdown to PDF', href: '/markdown-to-pdf', icon: 'pdf' },
-      { label: 'Markdown to Image', href: '/markdown-to-image', icon: 'image' },
+      { labelKey: 'sidebar.markdownToHtml', href: '/markdown-to-html', icon: 'html' },
+      { labelKey: 'sidebar.markdownToPdf', href: '/markdown-to-pdf', icon: 'pdf' },
+      { labelKey: 'sidebar.markdownToImage', href: '/markdown-to-image', icon: 'image' },
       // { label: 'TOC Generator', meta: 'Soon', href: null, icon: 'toc' },
     ],
   },
@@ -67,7 +70,7 @@ const navSections: NavSection[] = [
     items: [
       // { label: 'About MD Viewer', meta: 'About', href: null, icon: 'about' },
       // { label: 'Roadmap', meta: 'Plan', href: null, icon: 'roadmap' },
-      { label: 'Help & Feedback', href: 'mailto:support@mdviewer.net', icon: 'help' },
+      { labelKey: 'sidebar.help', href: 'mailto:support@mdviewer.net', icon: 'help' },
     ],
   },
 ];
@@ -98,6 +101,7 @@ function getNavIcon(icon: NavIcon) {
 }
 
 type SidebarContentProps = {
+  locale: Locale;
   collapsed: boolean;
   isDarkTheme: boolean;
   onToggleTheme: () => void;
@@ -106,17 +110,49 @@ type SidebarContentProps = {
 };
 
 function SidebarContent({
+  locale,
   collapsed,
   isDarkTheme,
   onToggleTheme,
   onToggleCollapse,
   showCollapseButton = true,
 }: SidebarContentProps) {
+  const { t } = useI18n();
+  const [pathname, setPathname] = useState('/');
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const sync = () => {
+      setPathname(window.location.pathname);
+      setSearch(window.location.search);
+    };
+
+    sync();
+    document.addEventListener('astro:page-load', sync);
+    document.addEventListener('astro:after-swap', sync);
+
+    return () => {
+      document.removeEventListener('astro:page-load', sync);
+      document.removeEventListener('astro:after-swap', sync);
+    };
+  }, []);
+
+  const alternateLocale = locale === 'en' ? 'zh-cn' : 'en';
+  const alternateHref = `${swapLocaleInPath(pathname, alternateLocale)}${search}`;
+
   return (
     <>
       <div className="sidebar-scroll-region">
         <div className="sidebar-top">
-          <a className={cn('brand', collapsed && 'brand-collapsed')} href="/" aria-label="MD Viewer home">
+          <a
+            className={cn('brand', collapsed && 'brand-collapsed')}
+            href={locale === 'en' ? '/' : '/zh-cn/'}
+            aria-label={t('sidebar.brandHome')}
+          >
             <img src="/logo-square.svg" alt="MD Viewer logo" className="brand-logo" style={{ width: '30px', height: '30px' }} />
             {!collapsed ? (
               <span className="brand-copy">
@@ -125,7 +161,7 @@ function SidebarContent({
             ) : null}
           </a>
 
-          <SidebarNav collapsed={collapsed} />
+          <SidebarNav collapsed={collapsed} locale={locale} />
         </div>
       </div>
 
@@ -135,11 +171,27 @@ function SidebarContent({
           variant="ghost"
           className={cn('sidebar-theme-button', collapsed && 'sidebar-theme-button-collapsed')}
           onClick={onToggleTheme}
-          aria-label={isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'}
-          title={isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label={isDarkTheme ? t('sidebar.theme.switchToLight') : t('sidebar.theme.switchToDark')}
+          title={isDarkTheme ? t('sidebar.theme.switchToLight') : t('sidebar.theme.switchToDark')}
         >
           {isDarkTheme ? <Sun className="size-4" /> : <Moon className="size-4" />}
-          {!collapsed ? <span>{isDarkTheme ? 'Light mode' : 'Dark mode'}</span> : null}
+          {!collapsed ? <span>{isDarkTheme ? t('sidebar.theme.light') : t('sidebar.theme.dark')}</span> : null}
+        </Button>
+
+        <Button
+          asChild
+          type="button"
+          variant="ghost"
+          className={cn('sidebar-theme-button', collapsed && 'sidebar-theme-button-collapsed')}
+        >
+          <a
+            href={alternateHref}
+            data-testid="locale-switcher"
+            aria-label={t('locale.label')}
+            title={t('locale.label')}
+          >
+            {!collapsed ? <span>{locale === 'en' ? t('locale.zh-cn') : t('locale.en')}</span> : <span>{locale === 'en' ? '中' : 'EN'}</span>}
+          </a>
         </Button>
 
         {showCollapseButton ? (
@@ -148,11 +200,11 @@ function SidebarContent({
             variant="ghost"
             className={cn('sidebar-collapse-button', collapsed && 'sidebar-collapse-button-collapsed')}
             onClick={onToggleCollapse}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={collapsed ? t('sidebar.collapse.expand') : t('sidebar.collapse.collapse')}
+            title={collapsed ? t('sidebar.collapse.expand') : t('sidebar.collapse.collapse')}
           >
             {collapsed ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
-            {!collapsed ? <span>Collapse</span> : null}
+            {!collapsed ? <span>{t('sidebar.collapse.collapse')}</span> : null}
           </Button>
         ) : null}
       </div>
@@ -160,19 +212,22 @@ function SidebarContent({
   );
 }
 
-function SidebarNav({ collapsed }: { collapsed: boolean }) {
+function SidebarNav({ collapsed, locale }: { collapsed: boolean; locale: Locale }) {
+  const { t } = useI18n();
+
   return (
     <div className="sidebar-nav">
       {navSections.map((section, sectionIndex) => (
         <div
-          key={section.label ?? `section-${sectionIndex}`}
+          key={section.labelKey ?? `section-${sectionIndex}`}
           className={cn('sidebar-group', section.secondary && 'sidebar-group-secondary')}
         >
-          {section.label && !collapsed ? <div className="sidebar-label">{section.label}</div> : null}
+          {section.labelKey && !collapsed ? <div className="sidebar-label">{t(section.labelKey)}</div> : null}
 
           <div className="nav-list">
             {section.items.map((item) => {
               const Icon = getNavIcon(item.icon);
+              const label = t(item.labelKey);
               const itemClasses = cn(
                 'nav-item',
                 item.active && 'is-active',
@@ -188,7 +243,7 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
                   {!collapsed ? (
                     <>
                       <span className="nav-copy nav-copy-single">
-                        <span>{item.label}</span>
+                        <span>{label}</span>
                       </span>
                       {/* {item.meta ? <span className={cn('nav-meta', item.active && 'nav-meta-active')}>{item.meta}</span> : null} */}
                     </>
@@ -197,15 +252,16 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
               );
 
               if (item.href) {
+                const href = item.href.startsWith('mailto:') ? item.href : `${locale === 'en' ? '' : '/zh-cn'}${item.href}`;
                 return (
-                  <a key={item.label} href={item.href} className={itemClasses} title={collapsed ? item.label : undefined}>
+                  <a key={item.labelKey} href={href} className={itemClasses} title={collapsed ? label : undefined}>
                     {content}
                   </a>
                 );
               }
 
               return (
-                <div key={item.label} className={itemClasses} aria-disabled="true" title={collapsed ? item.label : undefined}>
+                <div key={item.labelKey} className={itemClasses} aria-disabled="true" title={collapsed ? label : undefined}>
                   {content}
                 </div>
               );
@@ -217,7 +273,8 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
   );
 }
 
-export function WorkbenchSidebar() {
+function WorkbenchSidebarInner({ locale }: { locale: Locale }) {
+  const { t } = useI18n();
   const [isDesktop, setIsDesktop] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -300,6 +357,7 @@ export function WorkbenchSidebar() {
     <>
       <aside className={cn('sidebar', isSidebarCollapsed && 'is-collapsed')}>
         <SidebarContent
+          locale={locale}
           collapsed={isSidebarCollapsed}
           isDarkTheme={isDarkTheme}
           onToggleTheme={handleToggleTheme}
@@ -316,21 +374,23 @@ export function WorkbenchSidebar() {
                 variant="outline"
                 size="sm"
                 className="mobile-sidebar-trigger"
-                aria-label="Open navigation menu"
+                aria-label={t('sidebar.mobile.open')}
+                data-testid="mobile-menu-trigger"
               >
                 <Menu className="size-4" />
-                <span>Menu</span>
+                <span>{t('sidebar.mobile.menu')}</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="mobile-sidebar-sheet" showCloseButton={true}>
               <SheetHeader className="mobile-sidebar-header">
-                <SheetTitle>Navigation</SheetTitle>
+                <SheetTitle>{t('sidebar.mobile.title')}</SheetTitle>
                 <SheetDescription className="mobile-sidebar-description">
-                  Open sidebar navigation for MD Viewer tools.
+                  {t('sidebar.mobile.description')}
                 </SheetDescription>
               </SheetHeader>
               <div className="mobile-sidebar-shell">
                 <SidebarContent
+                  locale={locale}
                   collapsed={false}
                   isDarkTheme={isDarkTheme}
                   onToggleTheme={handleToggleTheme}
@@ -342,5 +402,13 @@ export function WorkbenchSidebar() {
         </div>
       ) : null}
     </>
+  );
+}
+
+export function WorkbenchSidebar({ locale }: { locale: Locale }) {
+  return (
+    <I18nProvider locale={locale}>
+      <WorkbenchSidebarInner locale={locale} />
+    </I18nProvider>
   );
 }

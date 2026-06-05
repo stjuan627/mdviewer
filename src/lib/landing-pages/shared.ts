@@ -3,6 +3,13 @@ import type {
   LandingPagePath,
   LandingSectionFaqItem,
 } from '@/lib/landing-pages/types';
+import type { Locale } from '@/lib/i18n';
+import {
+  DEFAULT_LOCALE,
+  SUPPORTED_LOCALES,
+  getAlternateLocaleUrls as buildAlternateLocaleUrls,
+  resolveCanonicalUrl as resolveLocalizedCanonicalUrl,
+} from '@/lib/i18n';
 
 const canonicalSiteUrl = 'https://mdviewer.net';
 
@@ -63,16 +70,21 @@ export function buildFaqSchema(faqItems: LandingSectionFaqItem[]) {
   ];
 }
 
-export function resolveCanonicalUrl(path: LandingPagePath, site?: URL | string) {
-  if (!site) {
-    return buildAbsoluteUrl(path);
-  }
+export function resolveCanonicalUrl(path: LandingPagePath, locale: Locale, site?: URL | string) {
+  return resolveLocalizedCanonicalUrl(path, locale, site);
+}
 
-  const base = typeof site === 'string' ? site : site.toString();
+export function getAlternateLocaleUrls(path: LandingPagePath, site?: URL | string) {
+  const alternates = buildAlternateLocaleUrls(path, site);
 
-  if (path === '/') {
-    return base;
-  }
-
-  return new URL(path, base).toString();
+  return [
+    ...SUPPORTED_LOCALES.map((locale) => ({
+      locale,
+      href: alternates[locale],
+    })),
+    {
+      locale: 'x-default' as const,
+      href: alternates[DEFAULT_LOCALE],
+    },
+  ];
 }

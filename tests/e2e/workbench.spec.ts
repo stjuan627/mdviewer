@@ -11,7 +11,7 @@ test('theme query drives preview theme', async ({ page }) => {
   await page.goto('/?theme=blueprint');
 
   await expect(page.getByTestId('preview-frame')).toHaveAttribute('data-theme', 'blueprint');
-  await expect(page.locator('.theme-switcher-select')).toHaveValue('blueprint');
+  await expect(page.getByTestId('theme-trigger')).toContainText('Blueprint');
 });
 
 test('legacy view param is ignored and preview stays pure', async ({ page }) => {
@@ -25,9 +25,20 @@ test('home raw source already contains server-rendered preview html', async ({ r
   const response = await request.get('/');
   const html = await response.text();
 
+  expect(html).toContain('lang="en"');
+  expect(html).toContain('rel="alternate" hreflang="zh-CN"');
   expect(html).toContain('data-testid="preview-frame"');
   expect(html).toContain('<h1>Online Markdown Editor with Live Preview</h1>');
   expect(html).toContain('<h2>Why choose a browser-based markdown editor</h2>');
+});
+
+test('zh-cn route exposes localized metadata and content', async ({ request }) => {
+  const response = await request.get('/zh-cn/markdown-to-pdf');
+  const html = await response.text();
+
+  expect(html).toContain('lang="zh-CN"');
+  expect(html).toContain('https://mdviewer.net/zh-cn/markdown-to-pdf');
+  expect(html).toContain('Markdown 转 PDF');
 });
 
 test('markdown-to-pdf route exposes pdf-only primary export intent', async ({ page, request }) => {
@@ -39,23 +50,21 @@ test('markdown-to-pdf route exposes pdf-only primary export intent', async ({ pa
   expect(html).toContain('data-testid="preview-frame"');
 
   await page.goto('/markdown-to-pdf');
-  await page.getByRole('button', { name: 'Export' }).click();
+  await page.getByTestId('export-menu-trigger').click();
 
-  await expect(page.getByRole('menuitem', { name: 'PDF' })).toBeVisible();
-  await expect(page.getByRole('menuitem', { name: 'HTML' })).toHaveCount(0);
-  await expect(page.getByRole('menuitem', { name: 'PNG' })).toHaveCount(0);
+  await expect(page.getByTestId('quick-action-pdf')).toBeVisible();
+  await expect(page.getByTestId('quick-action-image')).toHaveCount(0);
 });
 
 test('home route exposes PNG export and downloads a PNG file', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Export' }).click();
+  await page.getByTestId('export-menu-trigger').click();
 
-  await expect(page.getByRole('menuitem', { name: 'HTML' })).toBeVisible();
-  await expect(page.getByRole('menuitem', { name: 'PDF' })).toBeVisible();
-  await expect(page.getByRole('menuitem', { name: 'PNG' })).toBeVisible();
+  await expect(page.getByTestId('quick-action-pdf')).toBeVisible();
+  await expect(page.getByTestId('quick-action-image')).toBeVisible();
 
   const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('menuitem', { name: 'PNG' }).click();
+  await page.getByTestId('quick-action-image').click();
   const download = await downloadPromise;
 
   expect(download.suggestedFilename()).toBe('mdviewer-export.png');
@@ -144,12 +153,20 @@ test('browser print fallback can still open a populated preview page', async ({ 
     };
 
     window.localStorage.setItem('mdviewer-browser-print-payload', JSON.stringify(payload));
-    window.open('/print-preview', '_blank', 'noopener,width=1200,height=1600');
+    window.open('/print-preview?locale=en', '_blank', 'noopener,width=1200,height=1600');
   });
   const popup = await popupPromise;
 
   await popup.waitForLoadState('domcontentloaded');
-  await expect(popup).toHaveURL(/\/print-preview\/?$/);
+  await expect(popup).toHaveURL(/\/print-preview\?locale=en$/);
   await expect(popup.locator('[data-print-preview-frame]')).not.toBeEmpty();
   await expect(popup.locator('[data-print-preview-status]')).not.toContainText('unavailable');
+});
+
+test('locale switcher preserves slug and query', async ({ page }) => {
+  await page.goto('/markdown-to-pdf?theme=blueprint');
+  await page.getByTestId('locale-switcher').click();
+
+  await expect(page).toHaveURL('/zh-cn/markdown-to-pdf?theme=blueprint');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN');
 });

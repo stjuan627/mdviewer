@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { getLandingPageConfig } from '@/lib/landing-pages';
 import { homeInitialMarkdown } from '@/lib/landing-pages/content/home';
+import { getAlternateLocaleUrls, localizePath, localeSchema, resolveCanonicalUrl, swapLocaleInPath } from '@/lib/i18n';
 import { renderResult, sanitizeRenderedHtml } from '@/lib/renderer';
-import { parseWorkbenchSearchParams } from '@/lib/schemas';
+import { parseWorkbenchSearchParams, pdfRequestSchema } from '@/lib/schemas';
 import { buildShareRecord } from '@/lib/share';
 
 describe('renderer parity', () => {
@@ -95,11 +96,50 @@ describe('workbench search params', () => {
   });
 
   it('supports a page-specific fallback markdown sample', () => {
-    const landing = getLandingPageConfig('markdown-to-pdf');
+    const landing = getLandingPageConfig('markdown-to-pdf', 'en');
     const params = new URLSearchParams({ payload: 'x'.repeat(4000) });
     const parsed = parseWorkbenchSearchParams(params, landing.initialMarkdown);
 
     expect(parsed.payloadDropped).toBe(true);
     expect(parsed.markdown).toBe(landing.initialMarkdown);
+  });
+});
+
+describe('locale helpers', () => {
+  it('localizes and swaps paths correctly', () => {
+    expect(localizePath('/', 'en')).toBe('/');
+    expect(localizePath('/', 'zh-cn')).toBe('/zh-cn/');
+    expect(localizePath('/markdown-to-pdf', 'zh-cn')).toBe('/zh-cn/markdown-to-pdf');
+    expect(swapLocaleInPath('/markdown-to-pdf', 'zh-cn')).toBe('/zh-cn/markdown-to-pdf');
+    expect(swapLocaleInPath('/zh-cn/markdown-to-pdf', 'en')).toBe('/markdown-to-pdf');
+  });
+
+  it('builds canonical and alternate locale urls', () => {
+    expect(resolveCanonicalUrl('/markdown-to-pdf', 'zh-cn', 'https://mdviewer.net')).toBe(
+      'https://mdviewer.net/zh-cn/markdown-to-pdf'
+    );
+    expect(getAlternateLocaleUrls('/markdown-to-pdf', 'https://mdviewer.net')).toEqual({
+      en: 'https://mdviewer.net/markdown-to-pdf',
+      'zh-cn': 'https://mdviewer.net/zh-cn/markdown-to-pdf',
+    });
+  });
+});
+
+describe('locale and pdf schemas', () => {
+  it('validates supported locales', () => {
+    expect(localeSchema.safeParse('en').success).toBe(true);
+    expect(localeSchema.safeParse('zh-cn').success).toBe(true);
+    expect(localeSchema.safeParse('fr').success).toBe(false);
+  });
+
+  it('accepts locale-aware pdf requests', () => {
+    const parsed = pdfRequestSchema.parse({
+      markdown: '# hello',
+      themeId: 'paper',
+      locale: 'zh-cn',
+    });
+
+    expect(parsed.locale).toBe('zh-cn');
+    expect(parsed.themeId).toBe('paper');
   });
 });
