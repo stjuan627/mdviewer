@@ -15,11 +15,12 @@ type QuickActionPayload = {
 
 export async function parsePdfRequestPayload(request: Request) {
   const contentType = request.headers.get('content-type') ?? '';
-  const payload = contentType.includes('application/json')
-    ? await request.json()
+  const payload: Record<string, FormDataEntryValue | unknown> = contentType.includes('application/json')
+    ? ((await request.json()) as Record<string, unknown>)
     : Object.fromEntries((await request.formData()).entries());
-  const locale = localeSchema.safeParse(payload.locale).success
-    ? localeSchema.parse(payload.locale)
+  const localeValue = payload.locale;
+  const locale = localeSchema.safeParse(localeValue).success
+    ? localeSchema.parse(localeValue)
     : DEFAULT_LOCALE;
   const result = pdfRequestSchema.safeParse(payload);
 

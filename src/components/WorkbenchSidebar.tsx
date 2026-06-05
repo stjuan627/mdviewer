@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import {
   BookOpen,
+  Check,
   ChevronLeft,
+  ChevronDown,
   ChevronRight,
   FileCode2,
   FileImage,
   FileText,
+  Globe,
   HelpCircle,
   ImagePlus,
   Info,
@@ -17,6 +20,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { I18nProvider, useI18n } from '@/components/i18n/I18nProvider';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -25,8 +34,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import type { Locale } from '@/lib/i18n';
-import { swapLocaleInPath } from '@/lib/i18n';
+import { localeMetadata, localizePath, SUPPORTED_LOCALES, type Locale, swapLocaleInPath } from '@/lib/i18n';
 
 const DESKTOP_MEDIA_QUERY = '(min-width: 1101px)';
 const DESKTOP_COLLAPSE_STORAGE_KEY = 'mdviewer.sidebar-collapsed';
@@ -141,8 +149,7 @@ function SidebarContent({
     };
   }, []);
 
-  const alternateLocale = locale === 'en' ? 'zh-cn' : 'en';
-  const alternateHref = `${swapLocaleInPath(pathname, alternateLocale)}${search}`;
+  const currentLocale = localeMetadata[locale];
 
   return (
     <>
@@ -150,7 +157,7 @@ function SidebarContent({
         <div className="sidebar-top">
           <a
             className={cn('brand', collapsed && 'brand-collapsed')}
-            href={locale === 'en' ? '/' : '/zh-cn/'}
+            href={swapLocaleInPath('/', locale)}
             aria-label={t('sidebar.brandHome')}
           >
             <img src="/logo-square.svg" alt="MD Viewer logo" className="brand-logo" style={{ width: '30px', height: '30px' }} />
@@ -178,21 +185,52 @@ function SidebarContent({
           {!collapsed ? <span>{isDarkTheme ? t('sidebar.theme.light') : t('sidebar.theme.dark')}</span> : null}
         </Button>
 
-        <Button
-          asChild
-          type="button"
-          variant="ghost"
-          className={cn('sidebar-theme-button', collapsed && 'sidebar-theme-button-collapsed')}
-        >
-          <a
-            href={alternateHref}
-            data-testid="locale-switcher"
-            aria-label={t('locale.label')}
-            title={t('locale.label')}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              className={cn('px-2!', 'sidebar-theme-button', 'sidebar-locale-trigger', collapsed && 'sidebar-theme-button-collapsed')}
+              data-testid="locale-switcher"
+              aria-label={t('locale.selector')}
+              title={t('locale.selector')}
+            >
+              {!collapsed ? (
+                <>
+                  <Globe className="size-4 sidebar-locale-trigger-icon" />
+                  <span>{currentLocale.label}</span>
+                  <ChevronDown className="size-4 sidebar-locale-trigger-caret" />
+                </>
+              ) : (
+                <span>{currentLocale.shortLabel}</span>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align={collapsed ? 'center' : 'start'}
+            side="top"
+            className="hero-action-menu sidebar-locale-menu"
           >
-            {!collapsed ? <span>{locale === 'en' ? t('locale.zh-cn') : t('locale.en')}</span> : <span>{locale === 'en' ? '中' : 'EN'}</span>}
-          </a>
-        </Button>
+            {SUPPORTED_LOCALES.map((targetLocale) => {
+              const href = `${swapLocaleInPath(pathname, targetLocale)}${search}`;
+              const targetLocaleMeta = localeMetadata[targetLocale];
+              const isActive = targetLocale === locale;
+
+              return (
+                <DropdownMenuItem
+                  key={targetLocale}
+                  asChild
+                  className="sidebar-locale-item"
+                >
+                  <a href={href} hrefLang={targetLocaleMeta.langTag}>
+                    <span className="sidebar-locale-label">{targetLocaleMeta.label}</span>
+                    {isActive ? <Check className="size-4 sidebar-locale-check" /> : null}
+                  </a>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {showCollapseButton ? (
           <Button
@@ -252,7 +290,7 @@ function SidebarNav({ collapsed, locale }: { collapsed: boolean; locale: Locale 
               );
 
               if (item.href) {
-                const href = item.href.startsWith('mailto:') ? item.href : `${locale === 'en' ? '' : '/zh-cn'}${item.href}`;
+                const href = item.href.startsWith('mailto:') ? item.href : localizePath(item.href, locale);
                 return (
                   <a key={item.labelKey} href={href} className={itemClasses} title={collapsed ? label : undefined}>
                     {content}

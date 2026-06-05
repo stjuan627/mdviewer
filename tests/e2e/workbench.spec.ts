@@ -166,6 +166,7 @@ test('browser print fallback can still open a populated preview page', async ({ 
 test('locale switcher preserves slug and query', async ({ page }) => {
   await page.goto('/markdown-to-pdf?theme=blueprint');
   await page.getByTestId('locale-switcher').click();
+  await page.getByRole('menuitem', { name: /简体中文/i }).click();
 
   await expect(page).toHaveURL('/zh-cn/markdown-to-pdf?theme=blueprint');
   await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN');

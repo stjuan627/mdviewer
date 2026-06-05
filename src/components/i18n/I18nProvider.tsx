@@ -4,6 +4,7 @@ import type { Locale } from '@/lib/i18n';
 const dictionaries = {
   en: {
     'locale.label': 'Language',
+    'locale.selector': 'Select language',
     'locale.en': 'English',
     'locale.zh-cn': '简体中文',
     'sidebar.brandHome': 'MD Viewer home',
@@ -73,6 +74,7 @@ const dictionaries = {
   },
   'zh-cn': {
     'locale.label': '语言',
+    'locale.selector': '选择语言',
     'locale.en': 'English',
     'locale.zh-cn': '简体中文',
     'sidebar.brandHome': 'MD Viewer 首页',

@@ -108,10 +108,11 @@ describe('workbench search params', () => {
 describe('locale helpers', () => {
   it('localizes and swaps paths correctly', () => {
     expect(localizePath('/', 'en')).toBe('/');
-    expect(localizePath('/', 'zh-cn')).toBe('/zh-cn/');
+    expect(localizePath('/', 'zh-cn')).toBe('/zh-cn');
     expect(localizePath('/markdown-to-pdf', 'zh-cn')).toBe('/zh-cn/markdown-to-pdf');
     expect(swapLocaleInPath('/markdown-to-pdf', 'zh-cn')).toBe('/zh-cn/markdown-to-pdf');
     expect(swapLocaleInPath('/zh-cn/markdown-to-pdf', 'en')).toBe('/markdown-to-pdf');
+    expect(swapLocaleInPath('/zh-cn', 'en')).toBe('/');
   });
 
   it('builds canonical and alternate locale urls', () => {

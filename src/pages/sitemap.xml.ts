@@ -8,6 +8,7 @@ const DEFAULT_SITE_URL = 'https://mdviewer.net';
 const publicPaths = Array.from(
   new Set(
     Object.values(landingPageConfigs)
+      .flatMap((configsBySlug) => Object.values(configsBySlug))
       .map((config) => config.path)
       .filter((path): path is LandingPagePath => Boolean(path))
   )
