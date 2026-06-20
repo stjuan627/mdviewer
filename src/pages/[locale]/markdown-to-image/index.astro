@@ -1,11 +1,14 @@
 ---
 import LandingPageShell from '@/components/LandingPageShell.astro';
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES, normalizeLocale } from '@/lib/i18n';
 
 export const prerender = true;
 
 export function getStaticPaths() {
-  return [{ params: { locale: 'zh-cn' } }];
+  return SUPPORTED_LOCALES.filter((locale) => locale !== DEFAULT_LOCALE).map((locale) => ({
+    params: { locale },
+  }));
 }
 ---
 
-<LandingPageShell slug="markdown-to-image" locale="zh-cn" />
+<LandingPageShell slug="markdown-to-image" locale={normalizeLocale(Astro.params.locale)} />
