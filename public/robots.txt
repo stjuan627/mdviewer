@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Internal API endpoints (no HTML, JSON only).
+Disallow: /api/
+
+# Internal preview route (not for indexing).
+Disallow: /print-preview
+
+Sitemap: https://mdviewer.net/sitemap.xml
