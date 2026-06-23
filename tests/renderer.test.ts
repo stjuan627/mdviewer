@@ -109,10 +109,15 @@ describe('locale helpers', () => {
   it('localizes and swaps paths correctly', () => {
     expect(localizePath('/', 'en')).toBe('/');
     expect(localizePath('/', 'zh-cn')).toBe('/zh-cn');
+    expect(localizePath('/', 'ko')).toBe('/ko');
     expect(localizePath('/markdown-to-pdf', 'zh-cn')).toBe('/zh-cn/markdown-to-pdf');
+    expect(localizePath('/markdown-to-pdf', 'ko')).toBe('/ko/markdown-to-pdf');
     expect(swapLocaleInPath('/markdown-to-pdf', 'zh-cn')).toBe('/zh-cn/markdown-to-pdf');
+    expect(swapLocaleInPath('/markdown-to-pdf', 'ko')).toBe('/ko/markdown-to-pdf');
     expect(swapLocaleInPath('/zh-cn/markdown-to-pdf', 'en')).toBe('/markdown-to-pdf');
+    expect(swapLocaleInPath('/ko/markdown-to-pdf', 'en')).toBe('/markdown-to-pdf');
     expect(swapLocaleInPath('/zh-cn', 'en')).toBe('/');
+    expect(swapLocaleInPath('/ko', 'en')).toBe('/');
   });
 
   it('builds canonical and alternate locale urls', () => {
@@ -122,6 +127,8 @@ describe('locale helpers', () => {
     expect(getAlternateLocaleUrls('/markdown-to-pdf', 'https://mdviewer.net')).toEqual({
       en: 'https://mdviewer.net/markdown-to-pdf',
       'zh-cn': 'https://mdviewer.net/zh-cn/markdown-to-pdf',
+      ja: 'https://mdviewer.net/ja/markdown-to-pdf',
+      ko: 'https://mdviewer.net/ko/markdown-to-pdf',
     });
   });
 });
@@ -130,6 +137,8 @@ describe('locale and pdf schemas', () => {
   it('validates supported locales', () => {
     expect(localeSchema.safeParse('en').success).toBe(true);
     expect(localeSchema.safeParse('zh-cn').success).toBe(true);
+    expect(localeSchema.safeParse('ja').success).toBe(true);
+    expect(localeSchema.safeParse('ko').success).toBe(true);
     expect(localeSchema.safeParse('fr').success).toBe(false);
   });
 

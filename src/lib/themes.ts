@@ -17,11 +17,13 @@ export const themeOptions: Array<{
       en: 'Paper',
       'zh-cn': 'Paper',
       ja: 'Paper',
+      ko: 'Paper',
     },
     summary: {
       en: 'Warm editorial',
       'zh-cn': '温暖排版',
       ja: '暖かいエディトリアル',
+      ko: '따뜻한 편집 스타일',
     },
   },
   {
@@ -30,11 +32,13 @@ export const themeOptions: Array<{
       en: 'Blueprint',
       'zh-cn': 'Blueprint',
       ja: 'Blueprint',
+      ko: 'Blueprint',
     },
     summary: {
       en: 'Crisp technical',
       'zh-cn': '清晰技术风',
       ja: '鮮明なテクニカル',
+      ko: '선명한 기술 문서 스타일',
     },
   },
   {
@@ -43,11 +47,13 @@ export const themeOptions: Array<{
       en: 'Nocturne',
       'zh-cn': 'Nocturne',
       ja: 'Nocturne',
+      ko: 'Nocturne',
     },
     summary: {
       en: 'Dark reading',
       'zh-cn': '深色阅读',
       ja: 'ダークリーディング',
+      ko: '다크 읽기 모드',
     },
   },
 ];

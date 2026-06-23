@@ -8,6 +8,10 @@ import { homeLandingPageJa } from '@/lib/landing-pages/ja/home';
 import { markdownToHtmlLandingPageJa } from '@/lib/landing-pages/ja/markdown-to-html';
 import { markdownToImageLandingPageJa } from '@/lib/landing-pages/ja/markdown-to-image';
 import { markdownToPdfLandingPageJa } from '@/lib/landing-pages/ja/markdown-to-pdf';
+import { homeLandingPageKo } from '@/lib/landing-pages/ko/home';
+import { markdownToHtmlLandingPageKo } from '@/lib/landing-pages/ko/markdown-to-html';
+import { markdownToImageLandingPageKo } from '@/lib/landing-pages/ko/markdown-to-image';
+import { markdownToPdfLandingPageKo } from '@/lib/landing-pages/ko/markdown-to-pdf';
 import { homeLandingPageZhCn } from '@/lib/landing-pages/zh-cn/home';
 import { markdownToHtmlLandingPageZhCn } from '@/lib/landing-pages/zh-cn/markdown-to-html';
 import { markdownToImageLandingPageZhCn } from '@/lib/landing-pages/zh-cn/markdown-to-image';
@@ -31,5 +35,11 @@ export const landingPageConfigs: Record<Locale, Record<LandingPageConfig['slug']
     'markdown-to-html': markdownToHtmlLandingPageJa,
     'markdown-to-image': markdownToImageLandingPageJa,
     'markdown-to-pdf': markdownToPdfLandingPageJa,
+  },
+  ko: {
+    home: homeLandingPageKo,
+    'markdown-to-html': markdownToHtmlLandingPageKo,
+    'markdown-to-image': markdownToImageLandingPageKo,
+    'markdown-to-pdf': markdownToPdfLandingPageKo,
   },
 };

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const SUPPORTED_LOCALES = ['en', 'zh-cn', 'ja'] as const;
+export const SUPPORTED_LOCALES = ['en', 'zh-cn', 'ja', 'ko'] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = 'en';
@@ -29,6 +29,11 @@ export const localeMetadata: Record<
     langTag: 'ja',
     label: '日本語',
     shortLabel: 'JA',
+  },
+  ko: {
+    langTag: 'ko',
+    label: '한국어',
+    shortLabel: 'KO',
   },
 };
 
