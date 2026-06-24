@@ -27,9 +27,21 @@ test('home raw source already contains server-rendered preview html', async ({ r
 
   expect(html).toContain('lang="en"');
   expect(html).toContain('rel="alternate" hreflang="zh-CN"');
+  expect(html).toContain('rel="alternate" hreflang="ko"');
+  expect(html).toContain('href="https://mdviewer.net/ko"');
   expect(html).toContain('data-testid="preview-frame"');
-  expect(html).toContain('<h1>Online Markdown Editor with Live Preview</h1>');
-  expect(html).toContain('<h2>Why choose a browser-based markdown editor</h2>');
+  expect(html).toContain('<title>Online Markdown Viewer with Live Preview - MD Viewer</title>');
+  expect(html).toContain('<h2>Online Markdown Viewer with Live Preview</h2>');
+  expect(html).toContain('<h2>A markdown viewer that gets the rendering right</h2>');
+});
+
+test('sitemap exposes ko alternates for localized landing pages', async ({ request }) => {
+  const response = await request.get('/sitemap.xml');
+  const xml = await response.text();
+
+  expect(xml).toContain('<loc>https://mdviewer.net/markdown-to-pdf</loc>');
+  expect(xml).toContain('hreflang="ko" href="https://mdviewer.net/ko/markdown-to-pdf"');
+  expect(xml).toContain('hreflang="x-default" href="https://mdviewer.net/markdown-to-pdf"');
 });
 
 test('zh-cn route exposes localized metadata and content', async ({ request }) => {
