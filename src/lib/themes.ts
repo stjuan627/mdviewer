@@ -15,12 +15,14 @@ export const themeOptions: Array<{
     id: 'paper',
     label: {
       en: 'Paper',
+      es: 'Paper',
       'zh-cn': 'Paper',
       ja: 'Paper',
       ko: 'Paper',
     },
     summary: {
       en: 'Warm editorial',
+      es: 'Editorial cálido',
       'zh-cn': '温暖排版',
       ja: '暖かいエディトリアル',
       ko: '따뜻한 편집 스타일',
@@ -30,12 +32,14 @@ export const themeOptions: Array<{
     id: 'blueprint',
     label: {
       en: 'Blueprint',
+      es: 'Blueprint',
       'zh-cn': 'Blueprint',
       ja: 'Blueprint',
       ko: 'Blueprint',
     },
     summary: {
       en: 'Crisp technical',
+      es: 'Técnico nítido',
       'zh-cn': '清晰技术风',
       ja: '鮮明なテクニカル',
       ko: '선명한 기술 문서 스타일',
@@ -45,12 +49,14 @@ export const themeOptions: Array<{
     id: 'nocturne',
     label: {
       en: 'Nocturne',
+      es: 'Nocturne',
       'zh-cn': 'Nocturne',
       ja: 'Nocturne',
       ko: 'Nocturne',
     },
     summary: {
       en: 'Dark reading',
+      es: 'Lectura en oscuro',
       'zh-cn': '深色阅读',
       ja: 'ダークリーディング',
       ko: '다크 읽기 모드',
