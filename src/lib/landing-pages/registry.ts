@@ -4,6 +4,10 @@ import { markdownToImageLandingPage } from '@/lib/landing-pages/markdown-to-imag
 import { markdownToPdfLandingPage } from '@/lib/landing-pages/markdown-to-pdf';
 import type { LandingPageConfig } from '@/lib/landing-pages/types';
 import type { Locale } from '@/lib/i18n';
+import { homeLandingPageFr } from '@/lib/landing-pages/fr/home';
+import { markdownToHtmlLandingPageFr } from '@/lib/landing-pages/fr/markdown-to-html';
+import { markdownToImageLandingPageFr } from '@/lib/landing-pages/fr/markdown-to-image';
+import { markdownToPdfLandingPageFr } from '@/lib/landing-pages/fr/markdown-to-pdf';
 import { homeLandingPageEs } from '@/lib/landing-pages/es/home';
 import { markdownToHtmlLandingPageEs } from '@/lib/landing-pages/es/markdown-to-html';
 import { markdownToImageLandingPageEs } from '@/lib/landing-pages/es/markdown-to-image';
@@ -27,6 +31,12 @@ export const landingPageConfigs: Record<Locale, Record<LandingPageConfig['slug']
     'markdown-to-html': markdownToHtmlLandingPage,
     'markdown-to-image': markdownToImageLandingPage,
     'markdown-to-pdf': markdownToPdfLandingPage,
+  },
+  fr: {
+    home: homeLandingPageFr,
+    'markdown-to-html': markdownToHtmlLandingPageFr,
+    'markdown-to-image': markdownToImageLandingPageFr,
+    'markdown-to-pdf': markdownToPdfLandingPageFr,
   },
   es: {
     home: homeLandingPageEs,

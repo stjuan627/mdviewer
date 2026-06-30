@@ -15,6 +15,7 @@ export const themeOptions: Array<{
     id: 'paper',
     label: {
       en: 'Paper',
+      fr: 'Paper',
       es: 'Paper',
       'zh-cn': 'Paper',
       ja: 'Paper',
@@ -22,6 +23,7 @@ export const themeOptions: Array<{
     },
     summary: {
       en: 'Warm editorial',
+      fr: 'Éditorial chaleureux',
       es: 'Editorial cálido',
       'zh-cn': '温暖排版',
       ja: '暖かいエディトリアル',
@@ -32,6 +34,7 @@ export const themeOptions: Array<{
     id: 'blueprint',
     label: {
       en: 'Blueprint',
+      fr: 'Blueprint',
       es: 'Blueprint',
       'zh-cn': 'Blueprint',
       ja: 'Blueprint',
@@ -39,6 +42,7 @@ export const themeOptions: Array<{
     },
     summary: {
       en: 'Crisp technical',
+      fr: 'Technique net',
       es: 'Técnico nítido',
       'zh-cn': '清晰技术风',
       ja: '鮮明なテクニカル',
@@ -49,6 +53,7 @@ export const themeOptions: Array<{
     id: 'nocturne',
     label: {
       en: 'Nocturne',
+      fr: 'Nocturne',
       es: 'Nocturne',
       'zh-cn': 'Nocturne',
       ja: 'Nocturne',
@@ -56,6 +61,7 @@ export const themeOptions: Array<{
     },
     summary: {
       en: 'Dark reading',
+      fr: 'Lecture sombre',
       es: 'Lectura en oscuro',
       'zh-cn': '深色阅读',
       ja: 'ダークリーディング',

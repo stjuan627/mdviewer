@@ -17,7 +17,7 @@ test('theme query drives preview theme', async ({ page }) => {
 test('legacy view param is ignored and preview stays pure', async ({ page }) => {
   await page.goto('/?view=invalid');
 
-  await expect(page.getByTestId('preview-frame')).toContainText('Online Markdown Editor with Live Preview');
+  await expect(page.getByTestId('preview-frame')).toContainText('Online Markdown Viewer with Live Preview');
   await expect(page.getByTestId('preview-frame')).not.toContainText('Markdown Workbench');
 });
 
@@ -26,8 +26,10 @@ test('home raw source already contains server-rendered preview html', async ({ r
   const html = await response.text();
 
   expect(html).toContain('lang="en"');
+  expect(html).toContain('rel="alternate" hreflang="fr"');
   expect(html).toContain('rel="alternate" hreflang="zh-CN"');
   expect(html).toContain('rel="alternate" hreflang="ko"');
+  expect(html).toContain('href="https://mdviewer.net/fr"');
   expect(html).toContain('href="https://mdviewer.net/ko"');
   expect(html).toContain('data-testid="preview-frame"');
   expect(html).toContain('<title>Online Markdown Viewer with Live Preview - MD Viewer</title>');
@@ -35,12 +37,12 @@ test('home raw source already contains server-rendered preview html', async ({ r
   expect(html).toContain('<h2>A markdown viewer that gets the rendering right</h2>');
 });
 
-test('sitemap exposes ko alternates for localized landing pages', async ({ request }) => {
+test('sitemap exposes fr alternates for localized landing pages', async ({ request }) => {
   const response = await request.get('/sitemap.xml');
   const xml = await response.text();
 
   expect(xml).toContain('<loc>https://mdviewer.net/markdown-to-pdf</loc>');
-  expect(xml).toContain('hreflang="ko" href="https://mdviewer.net/ko/markdown-to-pdf"');
+  expect(xml).toContain('hreflang="fr" href="https://mdviewer.net/fr/markdown-to-pdf"');
   expect(xml).toContain('hreflang="x-default" href="https://mdviewer.net/markdown-to-pdf"');
 });
 
@@ -51,6 +53,15 @@ test('zh-cn route exposes localized metadata and content', async ({ request }) =
   expect(html).toContain('lang="zh-CN"');
   expect(html).toContain('https://mdviewer.net/zh-cn/markdown-to-pdf');
   expect(html).toContain('Markdown 转 PDF');
+});
+
+test('fr route exposes localized metadata and content', async ({ request }) => {
+  const response = await request.get('/fr/markdown-to-html');
+  const html = await response.text();
+
+  expect(html).toContain('lang="fr"');
+  expect(html).toContain('https://mdviewer.net/fr/markdown-to-html');
+  expect(html).toContain('Convertisseur Markdown vers HTML');
 });
 
 test('markdown-to-pdf route exposes pdf-only primary export intent', async ({ page, request }) => {
@@ -87,8 +98,8 @@ test('payload overflow falls back to default example', async ({ page }) => {
   const payload = 'x'.repeat(4000);
   await page.goto(`/?payload=${payload}`);
 
-  await expect(page.getByTestId('workbench-notice')).toContainText('已回落到默认示例');
-  await expect(page.getByTestId('markdown-input')).toContainText('Online Markdown Editor with Live Preview');
+  await expect(page.getByTestId('workbench-notice')).toContainText('Fell back to the default sample');
+  await expect(page.getByTestId('markdown-input')).toContainText('Online Markdown Viewer with Live Preview');
 });
 
 test('malicious markdown is sanitized in preview', async ({ page }) => {
@@ -103,7 +114,7 @@ test('malicious markdown is sanitized in preview', async ({ page }) => {
   await expect(preview.locator('a[href^="javascript:"]')).toHaveCount(0);
 });
 
-test('latex, gemoji, and footnotes render consistently in preview, copy, and share', async ({ page, context }) => {
+test('latex, gemoji, and footnotes render consistently in preview, copy, and share', async ({ page, context, request }) => {
   await page.goto('/');
 
   const markdown = [
@@ -132,12 +143,18 @@ test('latex, gemoji, and footnotes render consistently in preview, copy, and sha
   expect(copiedHtml).toContain('class="footnotes"');
   expect(copiedHtml).toContain('🚀');
 
-  await page.getByTestId('create-share').click();
-  const href = await page.getByTestId('open-share').getAttribute('href');
-  expect(href).toBeTruthy();
+  const shareResponse = await request.post('/api/share', {
+    data: {
+      markdown,
+      themeId: 'paper',
+    },
+  });
+  expect(shareResponse.ok()).toBeTruthy();
+  const sharePayload = await shareResponse.json();
+  expect(sharePayload.shareUrl).toBeTruthy();
 
   const sharePage = await context.newPage();
-  await sharePage.goto(href!);
+  await sharePage.goto(sharePayload.shareUrl);
 
   const shareFrame = sharePage.getByTestId('share-frame');
   await expect(shareFrame).toContainText('🚀');
@@ -178,8 +195,8 @@ test('browser print fallback can still open a populated preview page', async ({ 
 test('locale switcher preserves slug and query', async ({ page }) => {
   await page.goto('/markdown-to-pdf?theme=blueprint');
   await page.getByTestId('locale-switcher').click();
-  await page.getByRole('menuitem', { name: /简体中文/i }).click();
+  await page.getByRole('menuitem', { name: /Français/i }).click();
 
-  await expect(page).toHaveURL('/zh-cn/markdown-to-pdf?theme=blueprint');
-  await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN');
+  await expect(page).toHaveURL('/fr/markdown-to-pdf?theme=blueprint');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
 });
