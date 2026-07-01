@@ -27,6 +27,7 @@ test('home raw source already contains server-rendered preview html', async ({ r
 
   expect(html).toContain('lang="en"');
   expect(html).toContain('rel="alternate" hreflang="fr"');
+  expect(html).toContain('rel="alternate" hreflang="de"');
   expect(html).toContain('rel="alternate" hreflang="zh-CN"');
   expect(html).toContain('rel="alternate" hreflang="ko"');
   expect(html).toContain('href="https://mdviewer.net/fr"');
@@ -43,6 +44,7 @@ test('sitemap exposes fr alternates for localized landing pages', async ({ reque
 
   expect(xml).toContain('<loc>https://mdviewer.net/markdown-to-pdf</loc>');
   expect(xml).toContain('hreflang="fr" href="https://mdviewer.net/fr/markdown-to-pdf"');
+  expect(xml).toContain('hreflang="de" href="https://mdviewer.net/de/markdown-to-pdf"');
   expect(xml).toContain('hreflang="x-default" href="https://mdviewer.net/markdown-to-pdf"');
 });
 
@@ -62,6 +64,16 @@ test('fr route exposes localized metadata and content', async ({ request }) => {
   expect(html).toContain('lang="fr"');
   expect(html).toContain('https://mdviewer.net/fr/markdown-to-html');
   expect(html).toContain('Convertisseur Markdown vers HTML');
+});
+
+test('de markdown-to-image route exposes localized metadata and image-first positioning', async ({ request }) => {
+  const response = await request.get('/de/markdown-to-image');
+  const html = await response.text();
+
+  expect(html).toContain('lang="de"');
+  expect(html).toContain('https://mdviewer.net/de/markdown-to-image');
+  expect(html).toContain('Markdown to Image');
+  expect(html).toContain('Markdown-zu-Bild-Generator');
 });
 
 test('markdown-to-pdf route exposes pdf-only primary export intent', async ({ page, request }) => {

@@ -110,22 +110,27 @@ describe('locale helpers', () => {
     expect(localizePath('/', 'en')).toBe('/');
     expect(localizePath('/', 'fr')).toBe('/fr');
     expect(localizePath('/', 'es')).toBe('/es');
+    expect(localizePath('/', 'de')).toBe('/de');
     expect(localizePath('/', 'zh-cn')).toBe('/zh-cn');
     expect(localizePath('/', 'ko')).toBe('/ko');
     expect(localizePath('/markdown-to-pdf', 'fr')).toBe('/fr/markdown-to-pdf');
     expect(localizePath('/markdown-to-pdf', 'es')).toBe('/es/markdown-to-pdf');
+    expect(localizePath('/markdown-to-pdf', 'de')).toBe('/de/markdown-to-pdf');
     expect(localizePath('/markdown-to-pdf', 'zh-cn')).toBe('/zh-cn/markdown-to-pdf');
     expect(localizePath('/markdown-to-pdf', 'ko')).toBe('/ko/markdown-to-pdf');
     expect(swapLocaleInPath('/markdown-to-pdf', 'fr')).toBe('/fr/markdown-to-pdf');
     expect(swapLocaleInPath('/markdown-to-pdf', 'es')).toBe('/es/markdown-to-pdf');
+    expect(swapLocaleInPath('/markdown-to-pdf', 'de')).toBe('/de/markdown-to-pdf');
     expect(swapLocaleInPath('/markdown-to-pdf', 'zh-cn')).toBe('/zh-cn/markdown-to-pdf');
     expect(swapLocaleInPath('/markdown-to-pdf', 'ko')).toBe('/ko/markdown-to-pdf');
     expect(swapLocaleInPath('/fr/markdown-to-pdf', 'en')).toBe('/markdown-to-pdf');
     expect(swapLocaleInPath('/es/markdown-to-pdf', 'en')).toBe('/markdown-to-pdf');
+    expect(swapLocaleInPath('/de/markdown-to-pdf', 'en')).toBe('/markdown-to-pdf');
     expect(swapLocaleInPath('/zh-cn/markdown-to-pdf', 'en')).toBe('/markdown-to-pdf');
     expect(swapLocaleInPath('/ko/markdown-to-pdf', 'en')).toBe('/markdown-to-pdf');
     expect(swapLocaleInPath('/fr', 'en')).toBe('/');
     expect(swapLocaleInPath('/es', 'en')).toBe('/');
+    expect(swapLocaleInPath('/de', 'en')).toBe('/');
     expect(swapLocaleInPath('/zh-cn', 'en')).toBe('/');
     expect(swapLocaleInPath('/ko', 'en')).toBe('/');
   });
@@ -137,6 +142,9 @@ describe('locale helpers', () => {
     expect(resolveCanonicalUrl('/markdown-to-pdf', 'es', 'https://mdviewer.net')).toBe(
       'https://mdviewer.net/es/markdown-to-pdf'
     );
+    expect(resolveCanonicalUrl('/markdown-to-pdf', 'de', 'https://mdviewer.net')).toBe(
+      'https://mdviewer.net/de/markdown-to-pdf'
+    );
     expect(resolveCanonicalUrl('/markdown-to-pdf', 'zh-cn', 'https://mdviewer.net')).toBe(
       'https://mdviewer.net/zh-cn/markdown-to-pdf'
     );
@@ -144,6 +152,7 @@ describe('locale helpers', () => {
       en: 'https://mdviewer.net/markdown-to-pdf',
       fr: 'https://mdviewer.net/fr/markdown-to-pdf',
       es: 'https://mdviewer.net/es/markdown-to-pdf',
+      de: 'https://mdviewer.net/de/markdown-to-pdf',
       'zh-cn': 'https://mdviewer.net/zh-cn/markdown-to-pdf',
       ja: 'https://mdviewer.net/ja/markdown-to-pdf',
       ko: 'https://mdviewer.net/ko/markdown-to-pdf',
@@ -156,6 +165,7 @@ describe('locale and pdf schemas', () => {
     expect(localeSchema.safeParse('en').success).toBe(true);
     expect(localeSchema.safeParse('fr').success).toBe(true);
     expect(localeSchema.safeParse('es').success).toBe(true);
+    expect(localeSchema.safeParse('de').success).toBe(true);
     expect(localeSchema.safeParse('zh-cn').success).toBe(true);
     expect(localeSchema.safeParse('ja').success).toBe(true);
     expect(localeSchema.safeParse('ko').success).toBe(true);
