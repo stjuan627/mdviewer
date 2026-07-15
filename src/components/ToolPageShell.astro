@@ -1,0 +1,48 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import LandingSections from '@/components/LandingSections.astro';
+import type { ToolPageConfig } from '@/lib/tool-pages/types';
+
+interface Props {
+  config: ToolPageConfig;
+}
+
+const { config } = Astro.props;
+const canonicalUrl = new URL(config.path, Astro.site ?? new URL('https://mdviewer.net')).toString();
+---
+
+<BaseLayout
+  title={config.title}
+  description={config.description}
+  canonicalUrl={canonicalUrl}
+  schema={config.schema}
+  locale="en"
+  alternateLocales={[]}
+  showLocaleSwitcher={false}
+>
+  <div class="tool-page">
+    <header class="tool-page-hero">
+      <h1>{config.heroTitle}</h1>
+      <p>{config.heroDescription}</p>
+    </header>
+
+    <slot />
+
+    {config.sections.length > 0 ? (
+      <div class="shell tool-page-content">
+        <LandingSections sections={config.sections} />
+        {config.references?.length ? (
+          <aside class="tool-page-references" aria-labelledby="tool-page-references-title">
+            <h2 id="tool-page-references-title">Markdown table syntax references</h2>
+            <p>Generator behavior follows GitHub's published table documentation and the GFM tables extension.</p>
+            <ul>
+              {config.references.map((reference) => (
+                <li><a href={reference.href} rel="noopener noreferrer">{reference.label}</a></li>
+              ))}
+            </ul>
+          </aside>
+        ) : null}
+      </div>
+    ) : null}
+  </div>
+</BaseLayout>

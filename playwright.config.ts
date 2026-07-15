@@ -10,7 +10,7 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: 'npm run db:migrate:local && npm run preview -- --ip 127.0.0.1 --port 8787',
+    command: 'pnpm db:migrate:local && pnpm preview -- --ip 127.0.0.1 --port 8787',
     url: 'http://127.0.0.1:8787/',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,

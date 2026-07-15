@@ -11,7 +11,7 @@ const { sections } = Astro.props;
 {sections.map((section) => (
   <section class="seo-section" aria-labelledby={`landing-section-${section.id}`}>
     <div class="section-heading">
-      <span class="section-kicker">{section.kicker}</span>
+      {section.kicker ? <span class="section-kicker">{section.kicker}</span> : null}
       <h2 id={`landing-section-${section.id}`}>{section.title}</h2>
       <p>{section.description}</p>
     </div>

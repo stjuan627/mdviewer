@@ -15,6 +15,7 @@ interface Props {
   showSidebar?: boolean;
   locale?: Locale;
   alternateLocales?: Array<{ locale: Locale | 'x-default'; href: string }>;
+  showLocaleSwitcher?: boolean;
 }
 
 const {
@@ -26,6 +27,7 @@ const {
   showSidebar = true,
   locale = 'en',
   alternateLocales = [],
+  showLocaleSwitcher = true,
 } = Astro.props;
 ---
 
@@ -106,7 +108,7 @@ const {
   <body class:list={[appShell && 'app-shell-body']}>
     {appShell ? (
       <div class="app-container">
-        {showSidebar ? <WorkbenchSidebar client:load locale={locale} /> : null}
+        {showSidebar ? <WorkbenchSidebar client:load locale={locale} showLocaleSwitcher={showLocaleSwitcher} /> : null}
         <main class="main-content">
           <slot />
         </main>

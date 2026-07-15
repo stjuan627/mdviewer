@@ -5,6 +5,7 @@ import { getAlternateLocaleUrls, localizePath, localeSchema, resolveCanonicalUrl
 import { renderResult, sanitizeRenderedHtml } from '@/lib/renderer';
 import { parseWorkbenchSearchParams, pdfRequestSchema } from '@/lib/schemas';
 import { buildShareRecord } from '@/lib/share';
+import { getToolPageConfig } from '@/lib/tool-pages';
 
 describe('renderer parity', () => {
   it('keeps preview html equal to snapshotHtml', () => {
@@ -180,5 +181,17 @@ describe('locale and pdf schemas', () => {
 
     expect(parsed.locale).toBe('zh-cn');
     expect(parsed.themeId).toBe('paper');
+  });
+});
+
+describe('English-only tool page SEO', () => {
+  it('exposes matching software and FAQ schema', () => {
+    const page = getToolPageConfig('markdown-table-generator');
+    const schemaTypes = page.schema.map((entry) => entry['@type']);
+
+    expect(page.path).toBe('/markdown-table-generator');
+    expect(page.title).toContain('Markdown Table Generator');
+    expect(schemaTypes).toContain('SoftwareApplication');
+    expect(schemaTypes).toContain('FAQPage');
   });
 });

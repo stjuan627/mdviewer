@@ -13,7 +13,7 @@ import {
 
 const canonicalSiteUrl = 'https://mdviewer.net';
 
-function buildAbsoluteUrl(path: LandingPagePath) {
+function buildAbsoluteUrl(path: string) {
   if (path === '/') {
     return canonicalSiteUrl;
   }
@@ -22,7 +22,7 @@ function buildAbsoluteUrl(path: LandingPagePath) {
 }
 
 export function buildSoftwareSchema(
-  config: Pick<LandingPageConfig, 'title' | 'description' | 'path'>,
+  config: Pick<LandingPageConfig, 'title' | 'description'> & { path: string },
   featureList: string[]
 ) {
   const url = buildAbsoluteUrl(config.path);

@@ -19,6 +19,44 @@ export const pdfRequestSchema = renderRequestSchema.extend({
   locale: localeSchema.default(DEFAULT_LOCALE),
 });
 
+export const MARKDOWN_TABLE_LIMITS = {
+  maxColumns: 20,
+  maxRows: 100,
+  maxCellLength: 2_000,
+} as const;
+
+export const markdownTableAlignmentSchema = z.enum(['left', 'center', 'right']);
+
+export const markdownTableModelSchema = z
+  .object({
+    rows: z
+      .array(
+        z.array(z.string().max(MARKDOWN_TABLE_LIMITS.maxCellLength, 'Each cell can contain up to 2,000 characters.'))
+      )
+      .min(2, 'A table needs a header row and at least one body row.')
+      .max(MARKDOWN_TABLE_LIMITS.maxRows, 'A table can contain up to 100 rows.'),
+    alignments: z
+      .array(markdownTableAlignmentSchema)
+      .min(1, 'A table needs at least one column.')
+      .max(MARKDOWN_TABLE_LIMITS.maxColumns, 'A table can contain up to 20 columns.'),
+  })
+  .superRefine((model, context) => {
+    const columnCount = model.alignments.length;
+
+    model.rows.forEach((row, rowIndex) => {
+      if (row.length !== columnCount) {
+        context.addIssue({
+          code: 'custom',
+          message: `Row ${rowIndex + 1} must contain exactly ${columnCount} cells.`,
+          path: ['rows', rowIndex],
+        });
+      }
+    });
+  });
+
+export type MarkdownTableAlignment = z.infer<typeof markdownTableAlignmentSchema>;
+export type MarkdownTableModel = z.infer<typeof markdownTableModelSchema>;
+
 export type WorkbenchInit = {
   markdown: string;
   source: string | null;

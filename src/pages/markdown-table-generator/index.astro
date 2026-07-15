@@ -1,0 +1,11 @@
+---
+import ToolPageShell from '@/components/ToolPageShell.astro';
+import { MarkdownTableGenerator } from '@/components/tools/MarkdownTableGenerator';
+import { getToolPageConfig } from '@/lib/tool-pages';
+
+const config = getToolPageConfig('markdown-table-generator');
+---
+
+<ToolPageShell config={config}>
+  <MarkdownTableGenerator client:load />
+</ToolPageShell>

@@ -3,6 +3,7 @@ import type { APIRoute } from 'astro';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, localizePath, localeToLangTag } from '@/lib/i18n';
 import { landingPageConfigs } from '@/lib/landing-pages/registry';
 import type { LandingPagePath } from '@/lib/landing-pages/types';
+import { publishedToolPageConfigs } from '@/lib/tool-pages';
 
 const DEFAULT_SITE_URL = 'https://mdviewer.net';
 
@@ -15,6 +16,16 @@ const publicPaths = Array.from(
   )
 ).sort();
 
+type SitemapEntry = {
+  path: string;
+  localized: boolean;
+};
+
+const sitemapEntries: SitemapEntry[] = [
+  ...publicPaths.map((path) => ({ path, localized: true })),
+  ...publishedToolPageConfigs.map((config) => ({ path: config.path, localized: false })),
+].sort((a, b) => a.path.localeCompare(b.path));
+
 function escapeXml(value: string) {
   return value
     .replaceAll('&', '&amp;')
@@ -24,7 +35,7 @@ function escapeXml(value: string) {
     .replaceAll("'", '&apos;');
 }
 
-function buildAbsoluteUrl(path: LandingPagePath, site?: URL) {
+function buildAbsoluteUrl(path: string, site?: URL) {
   const base = site ?? new URL(DEFAULT_SITE_URL);
 
   if (path === '/') {
@@ -54,11 +65,11 @@ function buildAlternateLinks(path: LandingPagePath, site?: URL) {
     .join('');
 }
 
-function buildSitemap(paths: LandingPagePath[], site?: URL) {
-  const urls = paths
-    .map((path) => {
-      const location = escapeXml(buildAbsoluteUrl(path, site));
-      const alternates = buildAlternateLinks(path, site);
+export function buildSitemap(entries: SitemapEntry[], site?: URL) {
+  const urls = entries
+    .map((entry) => {
+      const location = escapeXml(buildAbsoluteUrl(entry.path, site));
+      const alternates = entry.localized ? buildAlternateLinks(entry.path as LandingPagePath, site) : '';
       return `<url><loc>${location}</loc>${alternates}</url>`;
     })
     .join('');
@@ -70,7 +81,7 @@ function buildSitemap(paths: LandingPagePath[], site?: URL) {
 export const prerender = true;
 
 export const GET: APIRoute = ({ site }) => {
-  return new Response(buildSitemap(publicPaths, site), {
+  return new Response(buildSitemap(sitemapEntries, site), {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
     },

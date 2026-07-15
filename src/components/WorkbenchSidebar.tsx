@@ -8,6 +8,7 @@ import {
   FileCode2,
   FileImage,
   FileText,
+  TableProperties,
   Globe,
   HelpCircle,
   ImagePlus,
@@ -39,10 +40,11 @@ import { localeMetadata, localizePath, SUPPORTED_LOCALES, type Locale, swapLocal
 const DESKTOP_MEDIA_QUERY = '(min-width: 1101px)';
 const DESKTOP_COLLAPSE_STORAGE_KEY = 'mdviewer.sidebar-collapsed';
 
-type NavIcon = 'html' | 'pdf' | 'image' | 'toc' | 'guides' | 'examples' | 'updates' | 'about' | 'roadmap' | 'help';
+type NavIcon = 'html' | 'table' | 'pdf' | 'image' | 'toc' | 'guides' | 'examples' | 'updates' | 'about' | 'roadmap' | 'help';
 
 type NavItem = {
-  labelKey: 'sidebar.markdownToHtml' | 'sidebar.markdownToPdf' | 'sidebar.markdownToImage' | 'sidebar.help';
+  labelKey?: 'sidebar.markdownToHtml' | 'sidebar.markdownToPdf' | 'sidebar.markdownToImage' | 'sidebar.help';
+  label?: string;
   meta?: string;
   href: string | null;
   icon: NavIcon;
@@ -83,10 +85,17 @@ const navSections: NavSection[] = [
   },
 ];
 
+const englishToolItems: NavItem[] = [
+  { label: 'Table Generator', href: '/markdown-table-generator', icon: 'table' },
+  { label: 'HTML to Markdown', href: '/html-to-markdown', icon: 'html' },
+];
+
 function getNavIcon(icon: NavIcon) {
   switch (icon) {
     case 'html':
       return FileCode2;
+    case 'table':
+      return TableProperties;
     case 'pdf':
       return FileText;
     case 'image':
@@ -115,6 +124,7 @@ type SidebarContentProps = {
   onToggleTheme: () => void;
   onToggleCollapse?: () => void;
   showCollapseButton?: boolean;
+  showLocaleSwitcher?: boolean;
 };
 
 function SidebarContent({
@@ -124,6 +134,7 @@ function SidebarContent({
   onToggleTheme,
   onToggleCollapse,
   showCollapseButton = true,
+  showLocaleSwitcher = true,
 }: SidebarContentProps) {
   const { t } = useI18n();
   const [pathname, setPathname] = useState('/');
@@ -168,7 +179,7 @@ function SidebarContent({
             ) : null}
           </a>
 
-          <SidebarNav collapsed={collapsed} locale={locale} />
+          <SidebarNav collapsed={collapsed} locale={locale} pathname={pathname} />
         </div>
       </div>
 
@@ -185,7 +196,7 @@ function SidebarContent({
           {!collapsed ? <span>{isDarkTheme ? t('sidebar.theme.light') : t('sidebar.theme.dark')}</span> : null}
         </Button>
 
-        <DropdownMenu>
+        {showLocaleSwitcher ? <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               type="button"
@@ -230,7 +241,7 @@ function SidebarContent({
               );
             })}
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> : null}
 
         {showCollapseButton ? (
           <Button
@@ -250,12 +261,15 @@ function SidebarContent({
   );
 }
 
-function SidebarNav({ collapsed, locale }: { collapsed: boolean; locale: Locale }) {
+function SidebarNav({ collapsed, locale, pathname }: { collapsed: boolean; locale: Locale; pathname: string }) {
   const { t } = useI18n();
+  const sections = navSections.map((section, index) =>
+    index === 0 && locale === 'en' ? { ...section, items: [...section.items, ...englishToolItems] } : section
+  );
 
   return (
     <div className="sidebar-nav">
-      {navSections.map((section, sectionIndex) => (
+      {sections.map((section, sectionIndex) => (
         <div
           key={section.labelKey ?? `section-${sectionIndex}`}
           className={cn('sidebar-group', section.secondary && 'sidebar-group-secondary')}
@@ -265,10 +279,16 @@ function SidebarNav({ collapsed, locale }: { collapsed: boolean; locale: Locale 
           <div className="nav-list">
             {section.items.map((item) => {
               const Icon = getNavIcon(item.icon);
-              const label = t(item.labelKey);
+              const label = item.label ?? (item.labelKey ? t(item.labelKey) : 'Tool');
+              const localizedHref = item.href?.startsWith('mailto:')
+                ? item.href
+                : item.href
+                  ? localizePath(item.href, locale)
+                  : null;
+              const isActive = localizedHref === pathname;
               const itemClasses = cn(
                 'nav-item',
-                item.active && 'is-active',
+                isActive && 'is-active',
                 !item.href && 'nav-item-placeholder',
                 collapsed && 'nav-item-collapsed'
               );
@@ -290,16 +310,16 @@ function SidebarNav({ collapsed, locale }: { collapsed: boolean; locale: Locale 
               );
 
               if (item.href) {
-                const href = item.href.startsWith('mailto:') ? item.href : localizePath(item.href, locale);
+                const href = localizedHref!;
                 return (
-                  <a key={item.labelKey} href={href} className={itemClasses} title={collapsed ? label : undefined}>
+                  <a key={item.labelKey ?? item.label} href={href} className={itemClasses} title={collapsed ? label : undefined} aria-current={isActive ? 'page' : undefined}>
                     {content}
                   </a>
                 );
               }
 
               return (
-                <div key={item.labelKey} className={itemClasses} aria-disabled="true" title={collapsed ? label : undefined}>
+                <div key={item.labelKey ?? item.label} className={itemClasses} aria-disabled="true" title={collapsed ? label : undefined}>
                   {content}
                 </div>
               );
@@ -311,7 +331,7 @@ function SidebarNav({ collapsed, locale }: { collapsed: boolean; locale: Locale 
   );
 }
 
-function WorkbenchSidebarInner({ locale }: { locale: Locale }) {
+function WorkbenchSidebarInner({ locale, showLocaleSwitcher }: { locale: Locale; showLocaleSwitcher: boolean }) {
   const { t } = useI18n();
   const [isDesktop, setIsDesktop] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -400,6 +420,7 @@ function WorkbenchSidebarInner({ locale }: { locale: Locale }) {
           isDarkTheme={isDarkTheme}
           onToggleTheme={handleToggleTheme}
           onToggleCollapse={handleToggleCollapse}
+          showLocaleSwitcher={showLocaleSwitcher}
         />
       </aside>
 
@@ -433,6 +454,7 @@ function WorkbenchSidebarInner({ locale }: { locale: Locale }) {
                   isDarkTheme={isDarkTheme}
                   onToggleTheme={handleToggleTheme}
                   showCollapseButton={false}
+                  showLocaleSwitcher={showLocaleSwitcher}
                 />
               </div>
             </SheetContent>
@@ -443,10 +465,10 @@ function WorkbenchSidebarInner({ locale }: { locale: Locale }) {
   );
 }
 
-export function WorkbenchSidebar({ locale }: { locale: Locale }) {
+export function WorkbenchSidebar({ locale, showLocaleSwitcher = true }: { locale: Locale; showLocaleSwitcher?: boolean }) {
   return (
     <I18nProvider locale={locale}>
-      <WorkbenchSidebarInner locale={locale} />
+      <WorkbenchSidebarInner locale={locale} showLocaleSwitcher={showLocaleSwitcher} />
     </I18nProvider>
   );
 }

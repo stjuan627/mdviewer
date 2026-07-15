@@ -212,3 +212,96 @@ test('locale switcher preserves slug and query', async ({ page }) => {
   await expect(page).toHaveURL('/fr/markdown-to-pdf?theme=blueprint');
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
 });
+
+test('markdown table generator exposes English-only SEO and sitemap entries', async ({ request }) => {
+  const response = await request.get('/markdown-table-generator');
+  const html = await response.text();
+
+  expect(response.ok()).toBeTruthy();
+  expect(html).toContain('<title>Markdown Table Generator - Create GFM Tables Online | MD Viewer</title>');
+  expect(html).toContain('rel="canonical" href="https://mdviewer.net/markdown-table-generator"');
+  expect(html).not.toContain('rel="alternate" hreflang=');
+  expect(html).toContain('"@type":"SoftwareApplication"');
+  expect(html).toContain('"@type":"FAQPage"');
+
+  const sitemapResponse = await request.get('/sitemap.xml');
+  const sitemap = await sitemapResponse.text();
+  const routeEntries = sitemap.match(/<loc>https:\/\/mdviewer\.net\/markdown-table-generator<\/loc>/g) ?? [];
+  const toolEntry = sitemap.match(/<url><loc>https:\/\/mdviewer\.net\/markdown-table-generator<\/loc>[\s\S]*?<\/url>/)?.[0];
+
+  expect(routeEntries).toHaveLength(1);
+  expect(toolEntry).toBe('<url><loc>https://mdviewer.net/markdown-table-generator</loc></url>');
+});
+
+test('markdown table grid edits, aligns, and renders through the live preview', async ({ page }) => {
+  await page.goto('/markdown-table-generator');
+
+  await expect(page.getByTestId('table-cell-0-0')).toHaveValue('Name');
+  await expect(page.getByTestId('markdown-output')).toContainText('| Name');
+
+  await page.getByRole('button', { name: 'Add row' }).click();
+  await expect(page.getByTestId('table-cell-3-0')).toBeVisible();
+  await page.getByRole('button', { name: 'Add column' }).click();
+  await expect(page.getByTestId('table-cell-0-3')).toBeVisible();
+  await page.getByRole('button', { name: 'Remove row 3' }).click();
+  await page.getByRole('button', { name: 'Remove column 4' }).click();
+  await expect(page.getByTestId('table-cell-3-0')).toHaveCount(0);
+  await expect(page.getByTestId('table-cell-0-3')).toHaveCount(0);
+
+  await page.getByTestId('table-cell-0-0').fill('Project');
+  await page.getByLabel('Alignment for column 1').selectOption('right');
+  await expect(page.getByTestId('markdown-output')).toContainText('| Project');
+  await expect(page.getByTestId('markdown-output')).toContainText('| ------:');
+
+  await page.getByRole('tab', { name: 'Preview' }).click();
+  await expect(page.getByTestId('table-preview')).toContainText('Project');
+  await expect(page.getByTestId('table-preview').locator('table')).toHaveCount(1);
+
+  await page.getByRole('button', { name: 'Clear' }).click();
+  await expect(page.getByTestId('table-cell-0-0')).toHaveValue('');
+  await expect(page.getByTestId('table-cell-1-0')).toHaveValue('');
+});
+
+test('markdown table generator imports CSV, copies, downloads, and hands off without a query payload', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/markdown-table-generator');
+
+  await page.getByRole('button', { name: 'Import CSV / TSV' }).click();
+  await page.getByTestId('table-import-input').fill('Tool,"Best for",Private\nMD Viewer,"README, docs",Yes\nSheets,"Planning, data",Local');
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByTestId('table-import-submit').click();
+
+  await expect(page.getByTestId('table-cell-1-1')).toHaveValue('README, docs');
+  await page.getByTestId('copy-markdown').click();
+  const clipboard = await page.evaluate(() => navigator.clipboard.readText());
+  expect(clipboard).toContain('| MD Viewer');
+  await expect(page.getByTestId('table-generator-status')).toContainText('copied');
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download .md' }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe('markdown-table.md');
+
+  await page.getByTestId('open-in-viewer').click();
+  await expect(page).toHaveURL('/');
+  expect(new URL(page.url()).search).toBe('');
+  await expect(page.getByTestId('markdown-input')).toContainText('MD Viewer');
+  await expect(page.getByTestId('preview-frame').locator('table')).toHaveCount(1);
+});
+
+test('spreadsheet paste expands the grid and mobile layout avoids document overflow', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/markdown-table-generator');
+
+  await page.getByTestId('table-cell-1-0').focus();
+  await page.evaluate(async () => {
+    const input = document.querySelector('[data-testid="table-cell-1-0"]') as HTMLInputElement;
+    const data = new DataTransfer();
+    data.setData('text/plain', 'Alpha\tReady\nBeta\tBlocked');
+    input.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+  });
+
+  await expect(page.getByTestId('table-cell-2-1')).toHaveValue('Blocked');
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  expect(overflow).toBe(false);
+});
