@@ -194,4 +194,17 @@ describe('English-only tool page SEO', () => {
     expect(schemaTypes).toContain('SoftwareApplication');
     expect(schemaTypes).toContain('FAQPage');
   });
+
+  it('exposes matching HTML converter software and FAQ schema', () => {
+    const page = getToolPageConfig('html-to-markdown');
+    const schemaTypes = page.schema.map((entry) => entry['@type']);
+    const faqSection = page.sections.find((section) => section.id === 'faq');
+    const faqSchema = page.schema.find((entry) => entry['@type'] === 'FAQPage');
+
+    expect(page.path).toBe('/html-to-markdown');
+    expect(page.title).toContain('HTML to Markdown Converter');
+    expect(schemaTypes).toContain('SoftwareApplication');
+    expect(schemaTypes).toContain('FAQPage');
+    expect((faqSchema?.mainEntity as unknown[]).length).toBe(faqSection?.faqItems?.length);
+  });
 });

@@ -33,8 +33,8 @@ const canonicalUrl = new URL(config.path, Astro.site ?? new URL('https://mdviewe
         <LandingSections sections={config.sections} />
         {config.references?.length ? (
           <aside class="tool-page-references" aria-labelledby="tool-page-references-title">
-            <h2 id="tool-page-references-title">Markdown table syntax references</h2>
-            <p>Generator behavior follows GitHub's published table documentation and the GFM tables extension.</p>
+            <h2 id="tool-page-references-title">Technical references</h2>
+            <p>Tool behavior follows the linked Markdown specifications and implementation documentation.</p>
             <ul>
               {config.references.map((reference) => (
                 <li><a href={reference.href} rel="noopener noreferrer">{reference.label}</a></li>

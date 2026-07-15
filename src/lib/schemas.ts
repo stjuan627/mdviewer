@@ -25,6 +25,22 @@ export const MARKDOWN_TABLE_LIMITS = {
   maxCellLength: 2_000,
 } as const;
 
+export const HTML_TO_MARKDOWN_LIMITS = {
+  maxInputLength: 200_000,
+  maxFileBytes: 200 * 1024,
+} as const;
+
+export const htmlConversionInputSchema = z.object({
+  html: z
+    .string()
+    .trim()
+    .min(1, 'Paste HTML or open an HTML file before converting.')
+    .max(
+      HTML_TO_MARKDOWN_LIMITS.maxInputLength,
+      'HTML input can contain up to 200,000 characters.'
+    ),
+});
+
 export const markdownTableAlignmentSchema = z.enum(['left', 'center', 'right']);
 
 export const markdownTableModelSchema = z

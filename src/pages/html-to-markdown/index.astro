@@ -1,0 +1,11 @@
+---
+import ToolPageShell from '@/components/ToolPageShell.astro';
+import { HtmlToMarkdownConverter } from '@/components/tools/HtmlToMarkdownConverter';
+import { getToolPageConfig } from '@/lib/tool-pages/registry';
+
+const config = getToolPageConfig('html-to-markdown');
+---
+
+<ToolPageShell config={config}>
+  <HtmlToMarkdownConverter client:only="react" />
+</ToolPageShell>

@@ -305,3 +305,78 @@ test('spreadsheet paste expands the grid and mobile layout avoids document overf
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
   expect(overflow).toBe(false);
 });
+
+test('HTML to Markdown exposes English-only SEO, matching schema, and one sitemap entry', async ({ request }) => {
+  const response = await request.get('/html-to-markdown');
+  const html = await response.text();
+
+  expect(response.ok()).toBeTruthy();
+  expect(html).toContain('<title>HTML to Markdown Converter - Clean GFM Online | MD Viewer</title>');
+  expect(html).toContain('rel="canonical" href="https://mdviewer.net/html-to-markdown"');
+  expect(html).not.toContain('rel="alternate" hreflang=');
+  expect(html).toContain('"@type":"SoftwareApplication"');
+  expect(html).toContain('"@type":"FAQPage"');
+  expect(html).toContain('Can this tool convert a webpage URL directly?');
+
+  const sitemap = await (await request.get('/sitemap.xml')).text();
+  const entries = sitemap.match(/<loc>https:\/\/mdviewer\.net\/html-to-markdown<\/loc>/g) ?? [];
+  const toolEntry = sitemap.match(/<url><loc>https:\/\/mdviewer\.net\/html-to-markdown<\/loc>[\s\S]*?<\/url>/)?.[0];
+  expect(entries).toHaveLength(1);
+  expect(toolEntry).toBe('<url><loc>https://mdviewer.net/html-to-markdown</loc></url>');
+});
+
+test('HTML converter handles a local file, warnings, preview, copy, download, and viewer handoff', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/html-to-markdown');
+
+  await page.getByTestId('html-file-input').setInputFiles({
+    name: 'cms-export.html',
+    mimeType: 'text/html',
+    buffer: Buffer.from('<h1>CMS Guide</h1><script>alert(1)</script><p><a href="javascript:alert(2)">Unsafe</a> <strong>clean text</strong></p><pre><code class="language-ts">const answer: number = 42;</code></pre><table><tr><th>Tool</th><th>Use</th></tr><tr><td>MD Viewer</td><td>Docs</td></tr></table>'),
+  });
+  await page.getByTestId('convert-html').click();
+
+  await expect(page.getByTestId('markdown-output')).toContainText('# CMS Guide');
+  await expect(page.getByTestId('markdown-output')).toContainText('```ts');
+  await expect(page.getByTestId('markdown-output')).toContainText('| Tool');
+  await expect(page.getByTestId('markdown-output')).not.toContainText('javascript:');
+  await expect(page.getByTestId('markdown-output')).not.toContainText('alert(1)');
+  await expect(page.getByTestId('conversion-warnings')).toContainText('removed');
+
+  await page.getByRole('tab', { name: 'Preview' }).click();
+  await expect(page.getByTestId('html-conversion-preview')).toContainText('CMS Guide');
+  await expect(page.getByTestId('html-conversion-preview').locator('table')).toHaveCount(1);
+  await expect(page.getByTestId('html-conversion-preview').locator('script')).toHaveCount(0);
+
+  await page.getByTestId('copy-markdown').click();
+  const clipboard = await page.evaluate(() => navigator.clipboard.readText());
+  expect(clipboard).toContain('# CMS Guide');
+  expect(clipboard).not.toContain('javascript:');
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download .md' }).click();
+  expect((await downloadPromise).suggestedFilename()).toBe('converted-markdown.md');
+
+  await page.getByTestId('open-in-viewer').click();
+  await expect(page).toHaveURL('/');
+  expect(new URL(page.url()).search).toBe('');
+  await expect(page.getByTestId('markdown-input')).toContainText('CMS Guide');
+});
+
+test('HTML converter retains the previous result after failure and fits mobile width', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/html-to-markdown');
+  await page.getByTestId('convert-html').click();
+  const previous = await page.getByTestId('markdown-output').inputValue();
+
+  await page.getByTestId('html-input').fill('');
+  await page.getByTestId('convert-html').click();
+  await expect(page.getByTestId('html-converter-status')).toContainText('previous result is still shown');
+  await expect(page.getByTestId('markdown-output')).toHaveValue(previous);
+  await page.getByTestId('open-in-viewer').click();
+  await expect(page).toHaveURL('/html-to-markdown');
+  await expect(page.getByTestId('html-converter-status')).toContainText('Convert the current HTML successfully');
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  expect(overflow).toBe(false);
+});
