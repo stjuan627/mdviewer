@@ -19,6 +19,7 @@ import {
   Sun,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AdsterraUnit } from '@/components/AdsterraUnit';
 import { I18nProvider, useI18n } from '@/components/i18n/I18nProvider';
 import {
   DropdownMenu,
@@ -59,7 +60,6 @@ type NavSection = {
 
 const navSections: NavSection[] = [
   {
-    labelKey: 'sidebar.tools',
     items: [
       { labelKey: 'sidebar.markdownToHtml', href: '/markdown-to-html', icon: 'html' },
       { labelKey: 'sidebar.markdownToPdf', href: '/markdown-to-pdf', icon: 'pdf' },
@@ -325,8 +325,28 @@ function SidebarNav({ collapsed, locale, pathname }: { collapsed: boolean; local
               );
             })}
           </div>
+          {sectionIndex === 0 ? <SidebarAdPlaceholders collapsed={collapsed} /> : null}
         </div>
       ))}
+    </div>
+  );
+}
+
+function SidebarAdPlaceholders({ collapsed }: { collapsed: boolean }) {
+  if (collapsed) {
+    return null;
+  }
+
+  return (
+    <div className="sidebar-ad-slots" aria-label="Ad placeholders">
+      <AdsterraUnit
+        className="sidebar-ad-unit sidebar-ad-unit-tall"
+        adKey="b83de879bcb33ec82c4b6593ffead3e6"
+        format="iframe"
+        height={300}
+        width={160}
+        params={{}}
+      />
     </div>
   );
 }

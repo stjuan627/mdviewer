@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useI18n } from '@/components/i18n/I18nProvider';
+import { AdsterraUnit } from '@/components/AdsterraUnit';
 import { RENDER_DEBOUNCE_MS } from '@/lib/constants';
 import type { Locale } from '@/lib/i18n';
 import {
@@ -481,8 +482,18 @@ export function Workbench({
       <div className="workbench-stage">
         <div className="workbench-hero">
           <div className="workbench-hero-copy">
-            <h1 className="workbench-hero-title">{title}</h1>
-            <p>{description}</p>
+            <div className="workbench-hero-copy-text">
+              <h1 className="workbench-hero-title">{title}</h1>
+              <p>{description}</p>
+            </div>
+            <AdsterraUnit
+              className="workbench-hero-ad"
+              adKey="b7ad5d5ffc1b49d12ae3c267770a34ee"
+              format="iframe"
+              height={60}
+              width={468}
+              params={{}}
+            />
           </div>
 
           {hasExportMenu ? (

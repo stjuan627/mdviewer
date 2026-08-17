@@ -146,7 +146,7 @@ html.dark .workbench-hero {
     url('/workbench-hero-art-banner-bg-dark.png'),
     linear-gradient(90deg, transparent, #0e0b09, #0e0b09, #0e0b09);
   background-repeat: no-repeat, no-repeat;
-  background-position: 85% 40%, 0 0;
+  background-position: 100% 40%, 0 0;
   background-size: auto 270px, 100% 100%;
 }
 
@@ -611,6 +611,24 @@ button:not([data-slot='button']):disabled {
   flex: 1;
   flex-direction: column;
   gap: 18px;
+}
+
+.sidebar-ad-slots {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.sidebar-ad-unit {
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.sidebar-ad-unit-tall {
+  width: 160px;
+  height: 300px;
 }
 
 .sidebar-group {
@@ -1159,7 +1177,7 @@ button:not([data-slot='button']):disabled {
   background-image: url('/workbench-hero-art-banner-bg.png');
   background-repeat: no-repeat;
   /* background-attachment: fixed; */
-  background-position: 90% 40%;
+  background-position: 100% 40%;
   background-size: auto 240px;
 }
 
@@ -1182,27 +1200,48 @@ button:not([data-slot='button']):disabled {
 }
 
 .workbench-hero-copy {
-  /* max-width: min(560px, calc(100% - 420px)); */
-  /* padding: 20px 18px 16px 2px; */
-  padding-block: 10px;
+  display: flex;
+  place-content: center start;
+  align-items: center;
+  gap: 50px;
+  padding-bottom: 10px;
+}
+
+.workbench-hero-copy-text {
+  min-width: 0;
+  max-width: 40%;
 }
 
 .workbench-hero-title {
   margin: 0 0 8px;
   color: var(--text-primary);
   font-family: var(--font-heading);
-  font-size: clamp(2rem, 2vw, 3rem);
+  font-size: clamp(1.8rem, 2vw, 2.25rem);
   font-weight: 500;
   line-height: 1;
   letter-spacing: -0.035em;
 }
 
 .workbench-hero-copy p {
-  /* max-width: min(500px, 50%); */
+  /* max-width: 40%; */
   margin: 0;
   color: rgba(92, 84, 79, 0.95);
   font-size: 14px;
   line-height: 1.5;
+}
+
+.workbench-hero-ad {
+  width: 468px;
+  height: 60px;
+  margin-top: 40px;
+  overflow: hidden;
+}
+
+.adsterra-unit iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
 .workbench-hero-actions {
@@ -3277,6 +3316,10 @@ html.dark .tool-page-content .seo-card {
     display: none;
   }
 
+  .sidebar-ad-slots {
+    display: none;
+  }
+
   .mobile-sidebar-trigger-wrap {
     display: block;
   }
@@ -3389,9 +3432,16 @@ html.dark .tool-page-content .seo-card {
   }
 
   .workbench-hero-copy {
+    grid-template-columns: minmax(0, 1fr);
     max-width: none;
     padding-right: 0;
     padding-bottom: 12px;
+  }
+
+  .workbench-hero-ad {
+    width: min(468px, 100%);
+    margin-top: 0;
+    justify-self: end;
   }
 
   .workbench-hero-title {
